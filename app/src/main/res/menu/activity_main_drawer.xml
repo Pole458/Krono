@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/nav_chronometer"
+                android:icon="@mipmap/ic_action_access_alarm"
+                android:title="Chronometer"/>
+        <item
+                android:id="@+id/nav_profiles"
+                android:icon="@mipmap/ic_action_people"
+                android:title="Profiles"/>
+        <item
+                android:id="@+id/nav_sports"
+                android:icon="@mipmap/ic_action_assessment"
+                android:title="Sports"/>
+        <item
+                android:id="@+id/nav_analytics"
+                android:icon="@mipmap/ic_action_assessment"
+                android:title="Analytics"/>
+        <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="Settings"/>
+    </group>
+t
+    <!--<item android:title="Communicate">-->
+        <!--<menu>-->
+            <!--<item-->
+                    <!--android:id="@+id/nav_share"-->
+                    <!--android:icon="@drawable/ic_menu_share"-->
+                    <!--android:title="Share"/>-->
+            <!--<item-->
+                    <!--android:id="@+id/nav_send"-->
+                    <!--android:icon="@drawable/ic_menu_send"-->
+                    <!--android:title="Send"/>-->
+        <!--</menu>-->
+    <!--</item>-->
+
+</menu>
