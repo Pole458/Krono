@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class MyViewModel extends AndroidViewModel {
@@ -20,7 +21,10 @@ public class MyViewModel extends AndroidViewModel {
 
     private LiveData<List<Sport>> sports;
 
-    private LiveData<List<ActivityType>> activityTypes;
+    private MutableLiveData<Sport> selectedSport;
+    private MutableLiveData<List<ActivityType>> activityTypes;
+
+    private MutableLiveData<Long> trackingSessionId;
 
     public MyViewModel(Application application) {
         super(application);
@@ -30,8 +34,11 @@ public class MyViewModel extends AndroidViewModel {
         sports = dao.getSports();
         profiles = dao.getProfiles();
 
-        Log.d("MyViewModel", "onCreate");
+        selectedSport = new MutableLiveData<>();
 
+        trackingSessionId = new MutableLiveData<>();
+
+        Log.v("Pole", "MyViewModel.onCreate");
     }
 
     public LiveData<List<Profile>> getProfiles() {
@@ -40,6 +47,16 @@ public class MyViewModel extends AndroidViewModel {
 
     public LiveData<List<Sport>> getSports() {
         return sports;
+    }
+
+    public void setSelectedProfile(Profile profile) {
+        SharedPreferences settings = getApplication().getSharedPreferences("krono_pref", 0);
+        settings.edit().putString("profile_name", profile.getName()).putString("profile_surname", profile.getSurname()).apply();
+
+        if(selectedProfile == null)
+            selectedProfile = new MutableLiveData<>();
+
+        selectedProfile.setValue(profile);
     }
 
     public MutableLiveData<Profile> getSelectedProfile() {
@@ -61,10 +78,6 @@ public class MyViewModel extends AndroidViewModel {
 
     }
 
-    public LiveData<List<ActivityType>> getActivityTypes(String sport) {
-        //todo get actiivty
-        return activityTypes;
-    }
 
     private static class GetProfileAsyncTask extends AsyncTask<String, Void, Void> {
 
@@ -82,9 +95,9 @@ public class MyViewModel extends AndroidViewModel {
             Profile profile = asyncTaskDao.getProfile(strings[0], strings[1]);
 
             if(profile != null)
-                Log.d("MyViewModel", "selected profile assigned: " + profile.getFullName());
+                Log.v("Pole", "MyViewModel: selected profile assigned: " + profile.getFullName());
             else
-                Log.d("MyViewModel", "selected profile assigned: null");
+                Log.v("Pole", "MyViewModel: selected profile assigned: null");
 
             asyncTaskSelectedProfile.postValue(profile);
 
@@ -92,11 +105,6 @@ public class MyViewModel extends AndroidViewModel {
         }
     }
 
-    public void setSelectedProfile(Profile profile) {
-        SharedPreferences settings = getApplication().getSharedPreferences("krono_pref", 0);
-        settings.edit().putString("profile_name", profile.getName()).putString("profile_surname", profile.getSurname()).apply();
-        selectedProfile.setValue(profile);
-    }
 
     public void addProfile(Profile profile) {
         new insertAsyncTask(dao).execute(profile);
@@ -117,4 +125,88 @@ public class MyViewModel extends AndroidViewModel {
             return null;
         }
     }
+
+    public LiveData<List<ActivityType>> getActivityTypes() {
+        if(activityTypes == null) {
+            activityTypes = new MutableLiveData<>();
+            if(selectedSport.getValue() != null) {
+                updateActivityTypes();
+            }
+        }
+
+        return activityTypes;
+    }
+
+    private static class GetActivityTypes extends AsyncTask<Sport, Void, Void> {
+
+        private Dao mAsyncTaskDao;
+        private MutableLiveData<List<ActivityType>> asyncTaskActivityTypes;
+
+        GetActivityTypes(Dao dao, MutableLiveData<List<ActivityType>> activityTypes) {
+            mAsyncTaskDao = dao;
+            asyncTaskActivityTypes = activityTypes;
+        }
+
+        @Override
+        protected Void doInBackground(final Sport... sport) {
+            asyncTaskActivityTypes.postValue(mAsyncTaskDao.getActivityTypes(sport[0].name));
+            return null;
+        }
+    }
+
+    public void updateActivityTypes() {
+        new GetActivityTypes(dao, activityTypes).execute(selectedSport.getValue());
+    }
+
+    public MutableLiveData<Sport> getSelectedSport() {
+        return selectedSport;
+    }
+
+    public void insertTrackingSession(TrackingSession session) {
+        new insertTrackingSession(dao, trackingSessionId).execute(session);
+    }
+
+    private static class insertTrackingSession extends AsyncTask<TrackingSession, Void, Void> {
+
+        private Dao mAsyncTaskDao;
+        private MutableLiveData<Long> asyncTaskId;
+
+        insertTrackingSession(Dao dao, MutableLiveData<Long> id) {
+            mAsyncTaskDao = dao;
+            asyncTaskId = id;
+        }
+
+        @Override
+        protected Void doInBackground(final TrackingSession... sessions) {
+            long id = mAsyncTaskDao.insertTrackingSession(sessions[0]);
+            asyncTaskId.postValue(id);
+            Log.v("Pole", "MyViewModel: got tracking session id: " + id);
+            return null;
+        }
+    }
+
+    public void stopTracking() {
+        if(trackingSessionId.getValue() != null) {
+            new stopTrackingSession(dao).execute(trackingSessionId.getValue());
+        } else {
+            Log.v("Pole", "MyViewModel: could not stop sessionSession, id == null");
+        }
+    }
+
+    private static class stopTrackingSession extends AsyncTask<Long, Void, Void> {
+
+        private Dao mAsyncTaskDao;
+
+        stopTrackingSession(Dao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Long... ids) {
+            mAsyncTaskDao.stopTrackingSession(ids[0], Calendar.getInstance().getTime());
+            Log.v("Pole", "MyViewModel: stopping tracking session id: " + ids[0]);
+            return null;
+        }
+    }
+
 }

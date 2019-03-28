@@ -4,17 +4,19 @@ import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-@Database(entities = {Sport.class, Profile.class}, version = 1, exportSchema = false)
+@Database(entities = {Sport.class, Profile.class, ActivityType.class, TrackingSession.class, Lap.class}, version = 1, exportSchema = false)
+@TypeConverters({DateConverter.class})
 public abstract class DB extends RoomDatabase {
 
     private static volatile DB INSTANCE;
 
-    public static DB getDatabase(final Context context) {
+    static DB getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (DB.class) {
                 if (INSTANCE == null) {
@@ -31,14 +33,14 @@ public abstract class DB extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            Log.d("DB", "onCreate");
+            Log.d("Pole", "Db.onCreate");
             new PopulateDbAsync(INSTANCE).execute();
         }
 
         @Override
         public void onOpen (@NonNull SupportSQLiteDatabase db){
             super.onOpen(db);
-            Log.d("DB", "onOpen");
+            Log.d("Pole", "DB.onOpen");
         }
     };
 
@@ -52,12 +54,10 @@ public abstract class DB extends RoomDatabase {
 
         @Override
         protected Void doInBackground(final Void... params) {
-//            mDao.deleteAll();
 
             mDao.insertSports(Sport.populate());
-
             mDao.insertActivities(ActivityType.populate());
-            Log.v("DB", "DB populated");
+            Log.v("Pole", "DB populated");
 
             return null;
         }

@@ -53,10 +53,10 @@
 			android:ems="10"
 			android:id="@+id/surnameEditText"
 			app:layout_constraintTop_toTopOf="@+id/surnameTextView"
-			app:layout_constraintBottom_toTopof="@+id/surnameTextView"
 			app:layout_constraintRight_toRightOf="parent"
 			app:layout_constraintLeft_toRightOf="@+id/surnameTextView"
-			android:hint="Insert Surname" app:layout_constraintBottom_toBottomOf="@+id/surnameTextView"/>
+			android:hint="Insert Surname"
+			app:layout_constraintBottom_toBottomOf="@+id/surnameTextView"/>
 
 	<TextView
 			android:text="Sport"
@@ -67,7 +67,7 @@
 			app:layout_constraintLeft_toLeftOf="parent"
 			app:layout_constraintRight_toLeftOf="@+id/surnameEditText"
 			app:layout_constraintTop_toBottomOf="@+id/surnameTextView"
-			app:layout_constraintBottom_toTopOf="@+id/activityTypeTextView"/>
+			app:layout_constraintBottom_toBottomOf="parent"/>
 
 	<Spinner
 			android:layout_width="0dp"
@@ -78,25 +78,6 @@
 			app:layout_constraintRight_toRightOf="@+id/surnameEditText"
 			app:layout_constraintLeft_toLeftOf="@+id/surnameEditText"/>
 
-	<TextView
-			android:text="Activity"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:id="@+id/activityTypeTextView"
-			android:textSize="18sp"
-			app:layout_constraintLeft_toLeftOf="parent"
-			app:layout_constraintRight_toLeftOf="@+id/surnameEditText"
-			app:layout_constraintTop_toBottomOf="@+id/surnameTextView"
-			app:layout_constraintBottom_toBottomOf="parent"/>
-
-	<Spinner
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:id="@+id/activityTypeSpinner"
-			app:layout_constraintTop_toTopOf="@+id/activityTypeTextView"
-			app:layout_constraintBottom_toBottomOf="@+id/activityTypeTextView"
-			app:layout_constraintRight_toRightOf="@+id/surnameEditText"
-			app:layout_constraintLeft_toLeftOf="@+id/surnameEditText"/>
 	<Button
 			android:text="Add"
 			android:layout_width="wrap_content"
@@ -105,7 +86,7 @@
 			app:layout_constraintRight_toRightOf="parent"
 			app:layout_constraintLeft_toLeftOf="parent"
 			app:layout_constraintBottom_toBottomOf="parent"
-			app:layout_constraintTop_toBottomOf="@+id/activityTypeTextView"/>
+			app:layout_constraintTop_toBottomOf="@+id/sportTextView"/>
 
 </android.support.constraint.ConstraintLayout>
 

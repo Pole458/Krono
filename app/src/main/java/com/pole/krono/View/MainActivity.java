@@ -1,4 +1,4 @@
-package com.pole.krono;
+package com.pole.krono.View;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -12,12 +12,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
-import com.pole.krono.View.ChronometerFragment;
-import com.pole.krono.View.MyFragment;
-import com.pole.krono.View.ProfilesFragment;
+import com.pole.krono.R;
 import com.pole.krono.model.MyViewModel;
 import com.pole.krono.model.Profile;
 
@@ -27,21 +25,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout drawer;
 
-    private MyFragment currentFragment;
-
     private NavigationView navigationView;
 
     private TextView profileFullName;
     private TextView profileSport;
 
-    public static int ADD_PROFILE_REQUEST = 1;
+    private Toolbar toolbar;
+
+    private static int ADD_PROFILE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Log.d("MainActivity", "onCreate");
+
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         drawer = findViewById(R.id.drawer_layout);
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         viewModel = ViewModelProviders.of(this).get(MyViewModel.class);
 
-        changeFragment(new ChronometerFragment(), null, false, R.id.nav_chronometer);
+        changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
 
         if(getIntent().hasExtra("profile_name")) {
             viewModel.addProfile(new Profile(getIntent().getStringExtra("profile_name"),
@@ -79,32 +79,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        } else if(!navigationView.getMenu().getItem(0).isChecked()) {
+            changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
+        }else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.main, menu);
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -114,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_chronometer) {
-            changeFragment(new ChronometerFragment(), null, true, 0);
+            changeFragment(new ChronometerFragment(), 0, R.string.app_name);
         } else if (id == R.id.nav_profiles) {
-            changeFragment(new ProfilesFragment(), null, true, 0);
+            changeFragment(new ProfilesFragment(), 0, R.string.profiles);
         } else if(id == R.id.nav_sports) {
-
+            changeFragment(new SportsFragment(), 0, R.string.sports);
         } else if (id == R.id.nav_analytics) {
 
         } else if (id == R.id.nav_settings) {
@@ -138,29 +117,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    private void changeFragment(MyFragment newFragment, Bundle bundle, boolean addToBackStack, int nav) {
+    private void changeFragment(Fragment newFragment, int nav, int stringId) {
 
-        if(currentFragment != null)
-            currentFragment.OnReplaced();
-
-        if(bundle != null)
-            newFragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frameLayout, newFragment);
-        if(addToBackStack)
-            fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+
+        toolbar.setTitle(stringId);
 
         if(nav != 0)
             navigationView.setCheckedItem(nav);
-
-        currentFragment = newFragment;
 
     }
 
     @Override
     public void onAddProfileButtonPressed() {
         startAddProfileActivity();
+    }
+
+    @Override
+    public void setSelectedProfile(Profile profile) {
+        viewModel.setSelectedProfile(profile);
+        changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
     }
 
     private void startAddProfileActivity() {
@@ -178,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     data.getStringExtra("profile_surname"),
                     data.getStringExtra("profile_sport")));
 
-            changeFragment(new ProfilesFragment(), null, false, R.id.nav_profiles);
+            changeFragment(new ProfilesFragment(), R.id.nav_profiles, R.string.profiles);
 
         }
     }

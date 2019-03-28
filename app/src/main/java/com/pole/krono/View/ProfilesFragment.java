@@ -1,29 +1,46 @@
 package com.pole.krono.View;
 
+import android.app.Activity;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import com.pole.krono.R;
 import com.pole.krono.model.MyViewModel;
 import com.pole.krono.model.Profile;
+import com.pole.krono.model.Sport;
+import com.pole.krono.model.TrackingSession;
 
 import java.util.List;
 
-public class ProfilesFragment extends MyFragment {
+public class ProfilesFragment extends Fragment {
 
     private ProfilesFragmentListener listener;
 
     private MyViewModel viewModel;
 
     private RecyclerView profilesRecyclerView;
+
+    private AppCompatActivity activity;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.activity = (AppCompatActivity) context;
+    }
 
     @Nullable
     @Override
@@ -32,7 +49,7 @@ public class ProfilesFragment extends MyFragment {
 
         profilesRecyclerView = view.findViewById(R.id.profiles_recyclerView);
         // use a linear layout manager
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mLayoutManager.scrollToPosition(0);
         profilesRecyclerView.setLayoutManager(mLayoutManager);
@@ -42,11 +59,11 @@ public class ProfilesFragment extends MyFragment {
         profilesRecyclerView.setHasFixedSize(true);
 
         // specify an adapter (see also next example)
-        final MyAdapter adapter = new MyAdapter(getContext());
+        final MyAdapter adapter = new MyAdapter(activity);
         profilesRecyclerView.setAdapter(adapter);
-        profilesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        viewModel = ViewModelProviders.of(getActivity()).get(MyViewModel.class);
+        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
         // update UI
         viewModel.getProfiles().observe(this, adapter::setProfiles);
 
@@ -69,18 +86,14 @@ public class ProfilesFragment extends MyFragment {
         public MyAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // create a new view
             // set the view's size, margins, paddings and layout parameters
-            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item, parent, false));
+            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item_profile, parent, false));
         }
 
         @Override
         public void onBindViewHolder(@NonNull MyAdapter.ViewHolder holder, int position) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
-            if(profiles != null) {
-                holder.setText(profiles.get(position));
-            } else {
-                holder.setLoading();
-            }
+            holder.setProfile(profiles.get(position));
         }
 
         void setProfiles(List<Profile> profiles){
@@ -99,22 +112,47 @@ public class ProfilesFragment extends MyFragment {
 
             private TextView nameTextView;
             private TextView sportTextView;
+            private Profile profile;
 
             ViewHolder(View itemView) {
                 super(itemView);
 
+                profile = null;
+
                 nameTextView = itemView.findViewById(R.id.fullnameTextView);
                 sportTextView = itemView.findViewById(R.id.sportTextView);
+
+                itemView.setOnClickListener(v -> listener.setSelectedProfile(profile));
+
+                itemView.setOnLongClickListener(v -> {
+
+                    Intent intent = new Intent();
+
+                    if(profile != null) {
+
+                        intent.putExtra("profile_name", profile.getName());
+                        intent.putExtra("profile_surname", profile.getSurname());
+                        intent.putExtra("profile_sport", profile.getSport());
+
+                        intent.setClass(activity, ProfileActivity.class);
+                        startActivity(intent);
+
+                    }
+
+                    return true;
+                });
             }
 
-            public void setText(Profile profile) {
-                nameTextView.setText(profile.getFullName());
-                sportTextView.setText(profile.getSport());
-            }
+            public void setProfile(Profile profile) {
+                this.profile = profile;
+                if(profile != null) {
+                    nameTextView.setText(profile.getFullName());
+                    sportTextView.setText(profile.getSport());
+                } else {
+                    nameTextView.setText("Loading");
+                    sportTextView.setText("Loading");
+                }
 
-            void setLoading() {
-                nameTextView.setText("Loading");
-                sportTextView.setText("Loading");
             }
         }
     }
@@ -125,5 +163,6 @@ public class ProfilesFragment extends MyFragment {
 
     public interface ProfilesFragmentListener {
         void onAddProfileButtonPressed();
+        void setSelectedProfile(Profile profile);
     }
 }

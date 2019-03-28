@@ -19,7 +19,7 @@ public class SelectedProfileViewModel extends AndroidViewModel {
 
         dao = DB.getDatabase(application).dao();
 
-        Log.d("SelectedProfileVM", "onCreate");
+        Log.d("Pole", "SelectedProfile.onCreate");
 
     }
 
@@ -58,9 +58,9 @@ public class SelectedProfileViewModel extends AndroidViewModel {
             Profile profile = asyncTaskDao.getProfile(strings[0], strings[1]);
 
             if(profile != null)
-                Log.d("SelectedProfileVM", "selected profile assigned: " + profile.getFullName());
+                Log.d("Pole", "SelectedProfile: selected profile assigned: " + profile.getFullName());
             else
-                Log.d("SelectedProfileVM", "selected profile assigned: null");
+                Log.d("Pole", "SelectedProfile: selected profile assigned: null");
 
             asyncTaskSelectedProfile.postValue(profile);
 
