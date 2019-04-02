@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,7 @@ import com.pole.krono.R;
 import com.pole.krono.model.*;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class ChronometerFragment extends Fragment {
 
@@ -37,6 +40,8 @@ public class ChronometerFragment extends Fragment {
     private ArrayAdapter<ActivityType> activityTypeArrayAdapter;
 
     private AppCompatActivity activity;
+
+    private RecyclerView lapsRecyclerView;
 
     @Override
     public void onAttach(Context context) {
@@ -86,6 +91,8 @@ public class ChronometerFragment extends Fragment {
         });
 
         lapButton = view.findViewById(R.id.lapTrackingButton);
+
+        lapButton.setOnClickListener(v -> viewModel.addLap(milliChronometer.lap(), milliChronometer.getLaps()));
 
         sportSpinner = view.findViewById(R.id.sportSpinner);
         sportArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
@@ -149,6 +156,20 @@ public class ChronometerFragment extends Fragment {
             activityTypeArrayAdapter.notifyDataSetChanged();
         });
 
+        lapsRecyclerView = view.findViewById(R.id.lapsRecyclerView);
+
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
+        mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mLayoutManager.scrollToPosition(0);
+        lapsRecyclerView.setLayoutManager(mLayoutManager);
+        lapsRecyclerView.setHasFixedSize(true);
+        final LapAdapter adapter = new LapAdapter(activity);
+        lapsRecyclerView.setAdapter(adapter);
+        lapsRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
+        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        viewModel.getLaps().observe(this, adapter::setLaps);
+
+
         return view;
     }
 
@@ -201,4 +222,71 @@ public class ChronometerFragment extends Fragment {
 
         viewModel.stopTracking();
     }
+
+    private class LapAdapter extends RecyclerView.Adapter<LapAdapter.ViewHolder> {
+
+        private LayoutInflater layoutInflater;
+        private List<Lap> laps;
+
+        LapAdapter(Context context) {
+            layoutInflater = LayoutInflater.from(context);
+        }
+
+        @NonNull
+        @Override
+        public LapAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            // create a new view
+            // set the view's size, margins, paddings and layout parameters
+            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item_lap, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull LapAdapter.ViewHolder holder, int position) {
+            // - get element from your dataset at this position
+            // - replace the contents of the view with that element
+            holder.setLap(laps.get(position));
+        }
+
+        void setLaps(List<Lap> laps){
+            this.laps = laps;
+            Log.v("Pole", "ChronoFragment: added " + laps.size() + " laps");
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public int getItemCount() {
+            if (laps != null)
+                return laps.size();
+            else return 0;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+
+            private TextView lapTimeTextView;
+            private TextView gapTextView;
+            private TextView lapNumberTextView;
+
+            ViewHolder(View itemView) {
+                super(itemView);
+
+                lapTimeTextView = itemView.findViewById(R.id.lapTimeTextView);
+                gapTextView = itemView.findViewById(R.id.gapTextView);
+                lapNumberTextView = itemView.findViewById(R.id.lapNumberTextView);
+
+            }
+
+            void setLap(Lap lap) {
+                if(lap != null) {
+                    lapTimeTextView.setText(MillisecondChronometer.getTimeString(lap.time));
+                    gapTextView.setText("+00:00");
+                    lapNumberTextView.setText(String.valueOf(lap.lapNumber));
+                } else {
+                    lapTimeTextView.setText("Loading");
+                    gapTextView.setText("Loading");
+                    lapNumberTextView.setText("Loading");
+                }
+            }
+        }
+    }
+
 }

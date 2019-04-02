@@ -37,6 +37,12 @@ public interface Dao {
     @Query("UPDATE trackingsession SET endTime = :endTime WHERE id == :id")
     void stopTrackingSession(long id, Date endTime);
 
-    @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname")
+    @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname ORDER BY startTime DESC")
     List<TrackingSession> getTrackingSession(String name, String surname);
+
+    @Insert
+    void insertLap(Lap... laps);
+
+    @Query("SELECT * FROM lap WHERE trackingSessionId == :sessionId ORDER BY lapNumber DESC")
+    List<Lap> getLaps(Long sessionId);
 }

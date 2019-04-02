@@ -7,6 +7,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
+import com.pole.krono.MillisecondChronometer;
 
 import java.util.Calendar;
 import java.util.List;
@@ -25,6 +26,7 @@ public class MyViewModel extends AndroidViewModel {
     private MutableLiveData<List<ActivityType>> activityTypes;
 
     private MutableLiveData<Long> trackingSessionId;
+    private MutableLiveData<List<Lap>> laps;
 
     public MyViewModel(Application application) {
         super(application);
@@ -37,6 +39,8 @@ public class MyViewModel extends AndroidViewModel {
         selectedSport = new MutableLiveData<>();
 
         trackingSessionId = new MutableLiveData<>();
+
+        laps = new MutableLiveData<>();
 
         Log.v("Pole", "MyViewModel.onCreate");
     }
@@ -78,6 +82,12 @@ public class MyViewModel extends AndroidViewModel {
 
     }
 
+    public void addLap(long lapTime, int lapCounter) {
+        if(trackingSessionId.getValue() != null) {
+            new addLap(dao).execute(new Lap(trackingSessionId.getValue(), lapCounter, lapTime));
+            new updateLaps(dao, laps).execute(trackingSessionId.getValue());
+        }
+    }
 
     private static class GetProfileAsyncTask extends AsyncTask<String, Void, Void> {
 
@@ -104,7 +114,6 @@ public class MyViewModel extends AndroidViewModel {
             return null;
         }
     }
-
 
     public void addProfile(Profile profile) {
         new insertAsyncTask(dao).execute(profile);
@@ -205,6 +214,47 @@ public class MyViewModel extends AndroidViewModel {
         protected Void doInBackground(final Long... ids) {
             mAsyncTaskDao.stopTrackingSession(ids[0], Calendar.getInstance().getTime());
             Log.v("Pole", "MyViewModel: stopping tracking session id: " + ids[0]);
+            return null;
+        }
+    }
+
+    private static class addLap extends AsyncTask<Lap, Void, Void> {
+
+        private Dao mAsyncTaskDao;
+
+        addLap(Dao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Lap... laps) {
+            mAsyncTaskDao.insertLap(laps);
+            Log.v("Pole", "MyViewModel: added lap: " + MillisecondChronometer.getTimeString(laps[0].time) + " to track session " + laps[0].trackingSessionId);
+            return null;
+        }
+    }
+
+    public MutableLiveData<List<Lap>> getLaps() {
+        if(laps != null) {
+            laps = new MutableLiveData<>();
+            new updateLaps(dao, laps).execute(trackingSessionId.getValue());
+        }
+        return laps;
+    }
+
+    private static class updateLaps extends AsyncTask<Long, Void, Void> {
+
+        private Dao mAsyncTaskDao;
+        private MutableLiveData<List<Lap>> asyncLaps;
+
+        updateLaps(Dao dao, MutableLiveData<List<Lap>> laps) {
+            mAsyncTaskDao = dao;
+            asyncLaps = laps;
+        }
+
+        @Override
+        protected Void doInBackground(Long... sessionId) {
+            asyncLaps.postValue(mAsyncTaskDao.getLaps(sessionId[0]));
             return null;
         }
     }

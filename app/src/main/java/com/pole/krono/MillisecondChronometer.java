@@ -10,6 +10,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
+
 import java.text.DecimalFormat;
 
 public class MillisecondChronometer extends android.support.v7.widget.AppCompatTextView {
@@ -31,6 +33,8 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
     private static final int TICK_WHAT = 2;
 
     private long timeElapsed;
+    private long lastLap;
+    private int laps;
 
     public MillisecondChronometer(Context context) {
         this (context, null, 0);
@@ -69,13 +73,15 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         return mOnChronometerTickListener;
     }
 
-    public void start() {
+    private void start() {
         mStarted = true;
         updateRunning();
     }
 
     public void restart() {
         setBase(SystemClock.elapsedRealtime());
+        lastLap = 0;
+        laps = 0;
         start();
     }
 
@@ -93,6 +99,13 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
     public void resume() {
         setBase(SystemClock.elapsedRealtime() - timeElapsed);
         start();
+    }
+
+    public long lap() {
+        long lapTime = timeElapsed - lastLap;
+        lastLap = timeElapsed;
+        laps++;
+        return lapTime;
     }
 
     public void setStarted(boolean started) {
@@ -115,32 +128,10 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
     }
 
     private synchronized void updateText(long now) {
+
         timeElapsed = now - mBase;
+        setText(getTimeString(timeElapsed));
 
-        DecimalFormat df = new DecimalFormat("00");
-
-        int hours = (int)(timeElapsed / (3600 * 1000));
-        int remaining = (int)(timeElapsed % (3600 * 1000));
-
-        int minutes = remaining / (60 * 1000);
-        remaining = remaining % (60 * 1000);
-
-        int seconds = remaining / 1000;
-//        remaining = remaining % (1000);
-
-        int milliseconds = ((int)timeElapsed % 1000) / 10;
-
-        String text = "";
-
-        if (hours > 0) {
-            text += df.format(hours) + ":";
-        }
-
-        text += df.format(minutes) + ":";
-        text += df.format(seconds) + ":";
-        text += df.format(milliseconds);
-
-        setText(text);
     }
 
     private void updateRunning() {
@@ -177,6 +168,11 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         return timeElapsed;
     }
 
+    public int getLaps() {
+        return laps;
+    }
+
+
     /*
      Chronometer mChronometer = (Chronometer) findViewById(R.id.chronometer);
         mChronometer.start();
@@ -194,5 +190,33 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
 		});
 
      */
+
+    private static DecimalFormat df = new DecimalFormat("00");
+
+    public static String getTimeString(long time) {
+
+        int hours = (int)(time / (3600000));
+        int remaining = (int)(time % (3600000));
+
+        int minutes = remaining / (60000);
+        remaining = remaining % (60000);
+
+        int seconds = remaining / 1000;
+//        remaining = remaining % (1000);
+
+        int milliseconds = ((int)time % 1000) / 10;
+
+        String text = "";
+
+        if (hours > 0) {
+            text += df.format(hours) + ":";
+        }
+
+        text += df.format(minutes) + ":";
+        text += df.format(seconds) + ":";
+        text += df.format(milliseconds);
+
+        return text;
+    }
 
 }
