@@ -5,8 +5,6 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
-import java.util.Date;
-
 @Entity(foreignKeys = {
         @ForeignKey(
                 entity = Profile.class,
@@ -39,8 +37,10 @@ public class TrackingSession {
 
     public String activityType;
 
-    public Date startTime;
+    public long startTime;
 
-    public Date endTime;
+    public long endTime;
+
+    public float distance;
 
 }

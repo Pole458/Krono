@@ -22,12 +22,7 @@ import java.util.List;
 public class SportsFragment extends Fragment {
 
     private AppCompatActivity activity;
-    
-    private MyViewModel viewModel;
-    
-    private RecyclerView sportRecyclerView;
-    private SportAdapter sportAdapter;
-    
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -38,9 +33,9 @@ public class SportsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_sports, container, false);
+        View view = inflater.inflate(R.layout.layout_recycler_button, container, false);
 
-        sportRecyclerView = view.findViewById(R.id.sports_recyclerView);
+        RecyclerView sportRecyclerView = view.findViewById(R.id.recyclerView);
         // use a linear layout manager
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -56,7 +51,7 @@ public class SportsFragment extends Fragment {
         sportRecyclerView.setAdapter(adapter);
         sportRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        MyViewModel viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
         // update UI
         viewModel.getSports().observe(this, adapter::setSports);
 
@@ -114,7 +109,7 @@ public class SportsFragment extends Fragment {
                 if(sport != null) {
                     sportTextView.setText(sport.name);
                 } else {
-                    sportTextView.setText("Loading");
+                    sportTextView.setText(R.string.loading);
                 }
 
             }

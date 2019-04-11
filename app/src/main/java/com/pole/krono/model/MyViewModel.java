@@ -172,25 +172,33 @@ public class MyViewModel extends AndroidViewModel {
     }
 
     public void insertTrackingSession(TrackingSession session) {
-        new insertTrackingSession(dao, trackingSessionId).execute(session);
+        new insertTrackingSession(dao, trackingSessionId, laps).execute(session);
     }
 
     private static class insertTrackingSession extends AsyncTask<TrackingSession, Void, Void> {
 
         private Dao mAsyncTaskDao;
         private MutableLiveData<Long> asyncTaskId;
+        private MutableLiveData<List<Lap>> asyncLaps;
+        private long id;
 
-        insertTrackingSession(Dao dao, MutableLiveData<Long> id) {
+        insertTrackingSession(Dao dao, MutableLiveData<Long> id, MutableLiveData<List<Lap>> laps) {
             mAsyncTaskDao = dao;
             asyncTaskId = id;
+            asyncLaps = laps;
         }
 
         @Override
         protected Void doInBackground(final TrackingSession... sessions) {
-            long id = mAsyncTaskDao.insertTrackingSession(sessions[0]);
+            id = mAsyncTaskDao.insertTrackingSession(sessions[0]);
             asyncTaskId.postValue(id);
             Log.v("Pole", "MyViewModel: got tracking session id: " + id);
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            new updateLaps(mAsyncTaskDao, asyncLaps).execute(id);
         }
     }
 
@@ -212,7 +220,7 @@ public class MyViewModel extends AndroidViewModel {
 
         @Override
         protected Void doInBackground(final Long... ids) {
-            mAsyncTaskDao.stopTrackingSession(ids[0], Calendar.getInstance().getTime());
+            mAsyncTaskDao.stopTrackingSession(ids[0], Calendar.getInstance().getTimeInMillis());
             Log.v("Pole", "MyViewModel: stopping tracking session id: " + ids[0]);
             return null;
         }

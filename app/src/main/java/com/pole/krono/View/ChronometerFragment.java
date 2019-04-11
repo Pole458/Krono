@@ -2,6 +2,7 @@ package com.pole.krono.View;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +29,7 @@ public class ChronometerFragment extends Fragment {
     private MillisecondChronometer milliChronometer;
 
     private TextView fullnameTextView;
+    private TextView sportActivityTextView;
 
     private Button startButton;
     private Button pauseResumeButton;
@@ -35,13 +37,17 @@ public class ChronometerFragment extends Fragment {
 
     private Spinner sportSpinner;
     private Spinner activityTypeSpinner;
+    private View activityTpeTextView;
+
+    private RecyclerView lapsRecyclerView;
 
     private ArrayAdapter<Sport> sportArrayAdapter;
     private ArrayAdapter<ActivityType> activityTypeArrayAdapter;
 
     private AppCompatActivity activity;
 
-    private RecyclerView lapsRecyclerView;
+    private Listener listener;
+
 
     @Override
     public void onAttach(Context context) {
@@ -72,6 +78,7 @@ public class ChronometerFragment extends Fragment {
         });
 
         fullnameTextView = view.findViewById(R.id.fullnameTextView);
+        sportActivityTextView = view.findViewById(R.id.sportActivityTextView);
 
         pauseResumeButton = view.findViewById(R.id.pauseResumeTrackingButton);
 
@@ -79,12 +86,12 @@ public class ChronometerFragment extends Fragment {
 
             if(pauseResumeButton.getText().equals("Pause")) {
 
-                pauseResumeButton.setText("Resume");
+                pauseResumeButton.setText(R.string.resume);
                 milliChronometer.pause();
 
             } else {
 
-                pauseResumeButton.setText("Pause");
+                pauseResumeButton.setText(R.string.pause);
                 milliChronometer.resume();
 
             }
@@ -99,6 +106,7 @@ public class ChronometerFragment extends Fragment {
         sportSpinner.setAdapter(sportArrayAdapter);
 
         activityTypeSpinner = view.findViewById(R.id.activityTypeSpinner);
+        activityTpeTextView = view.findViewById(R.id.activityTypeTextView);
         activityTypeArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
         activityTypeSpinner.setAdapter(activityTypeArrayAdapter);
 
@@ -149,9 +157,15 @@ public class ChronometerFragment extends Fragment {
 
         viewModel.getActivityTypes().observe(activity, activityTypes -> {
             activityTypeArrayAdapter.clear();
-            if (activityTypes != null) {
+            if (activityTypes != null && activityTypes.size() > 0) {
                 activityTypeArrayAdapter.addAll(activityTypes);
                 Log.v("Pole", "Found " + activityTypes.size() + " activity types");
+                activityTypeSpinner.setVisibility(View.VISIBLE);
+                activityTpeTextView.setVisibility(View.VISIBLE);
+            } else {
+                Log.v("Pole", "Found 0 activity types");
+                activityTypeSpinner.setVisibility(View.INVISIBLE);
+                activityTpeTextView.setVisibility(View.INVISIBLE);
             }
             activityTypeArrayAdapter.notifyDataSetChanged();
         });
@@ -167,8 +181,12 @@ public class ChronometerFragment extends Fragment {
         lapsRecyclerView.setAdapter(adapter);
         lapsRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
         viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
-        viewModel.getLaps().observe(this, adapter::setLaps);
-
+        viewModel.getLaps().observe(this, laps -> {
+            if (laps != null) {
+                adapter.setLaps(laps);
+                lapsRecyclerView.scrollToPosition(0);
+            }
+        });
 
         return view;
     }
@@ -185,11 +203,8 @@ public class ChronometerFragment extends Fragment {
 
     private void startTracking() {
 
-        startButton.setText("Stop Tracking");
+        startButton.setText(R.string.stop_tracking);
         milliChronometer.restart();
-
-        pauseResumeButton.setVisibility(View.VISIBLE);
-        lapButton.setVisibility(View.VISIBLE);
 
         Profile profile = viewModel.getSelectedProfile().getValue();
         Sport sport = viewModel.getSelectedSport().getValue();
@@ -203,24 +218,61 @@ public class ChronometerFragment extends Fragment {
             session.profileName = profile.getName();
             session.profileSurname = profile.getSurname();
             session.sport = sport.name;
-            if(activityType != null)
+            if(activityType != null) {
                 session.activityType = activityType.name;
-            session.startTime = Calendar.getInstance().getTime();
+                sportActivityTextView.setText(String.format("%s, %s",sport.name, activityType.name));
+            } else
+                sportActivityTextView.setText(sport.name);
+
+            session.startTime = Calendar.getInstance().getTimeInMillis();
 
             viewModel.insertTrackingSession(session);
         }
+
+        pauseResumeButton.setVisibility(View.VISIBLE);
+        lapButton.setVisibility(View.VISIBLE);
+
+        sportSpinner.setVisibility(View.INVISIBLE);
+        activityTypeSpinner.setVisibility(View.INVISIBLE);
+        getView().findViewById(R.id.sportTextView).setVisibility(View.INVISIBLE);
+        getView().findViewById(R.id.activityTypeTextView).setVisibility(View.INVISIBLE);
+
+        sportActivityTextView.setVisibility(View.VISIBLE);
+
+        lapsRecyclerView.setVisibility(View.VISIBLE);
+        getView().findViewById(R.id.line).setVisibility(View.VISIBLE);
+
+        listener.onStartTracking();
+
     }
 
     private void stopTracking() {
 
-        startButton.setText("Start Tracking");
-        pauseResumeButton.setText("Pause");
+        startButton.setText(R.string.start_tracking);
+        pauseResumeButton.setText(R.string.pause);
         milliChronometer.stop();
+
+        viewModel.addLap(milliChronometer.lap(), milliChronometer.getLaps());
+        viewModel.stopTracking();
 
         pauseResumeButton.setVisibility(View.GONE);
         lapButton.setVisibility(View.GONE);
 
-        viewModel.stopTracking();
+        sportSpinner.setVisibility(View.VISIBLE);
+        activityTypeSpinner.setVisibility(View.VISIBLE);
+        getView().findViewById(R.id.sportTextView).setVisibility(View.VISIBLE);
+        getView().findViewById(R.id.activityTypeTextView).setVisibility(View.VISIBLE);
+
+        sportActivityTextView.setVisibility(View.GONE);
+
+        lapsRecyclerView.setVisibility(View.GONE);
+        getView().findViewById(R.id.line).setVisibility(View.GONE);
+
+        listener.onStopTracking();
+    }
+
+    void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     private class LapAdapter extends RecyclerView.Adapter<LapAdapter.ViewHolder> {
@@ -244,7 +296,7 @@ public class ChronometerFragment extends Fragment {
         public void onBindViewHolder(@NonNull LapAdapter.ViewHolder holder, int position) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
-            holder.setLap(laps.get(position));
+            holder.setLap(position);
         }
 
         void setLaps(List<Lap> laps){
@@ -275,18 +327,28 @@ public class ChronometerFragment extends Fragment {
 
             }
 
-            void setLap(Lap lap) {
+            void setLap(int pos) {
+                Lap lap = laps.get(pos);
                 if(lap != null) {
                     lapTimeTextView.setText(MillisecondChronometer.getTimeString(lap.time));
-                    gapTextView.setText("+00:00");
                     lapNumberTextView.setText(String.valueOf(lap.lapNumber));
+                    if(pos < laps.size() - 1) {
+                        long gap = lap.time - laps.get(pos + 1).time;
+                        gapTextView.setText(MillisecondChronometer.getGapString(gap));
+                        gapTextView.setTextColor(gap > 0 ? Color.RED : Color.GREEN);
+                    } else
+                        gapTextView.setText("");
                 } else {
-                    lapTimeTextView.setText("Loading");
-                    gapTextView.setText("Loading");
-                    lapNumberTextView.setText("Loading");
+                    lapTimeTextView.setText(R.string.loading);
+                    gapTextView.setText(R.string.loading);
+                    lapNumberTextView.setText(R.string.loading);
                 }
             }
         }
     }
 
+    public interface Listener {
+        void onStartTracking();
+        void onStopTracking();
+    }
 }

@@ -2,7 +2,6 @@ package com.pole.krono.View;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,19 +9,19 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
-import com.pole.krono.model.Profile;
+import com.pole.krono.model.ProfileViewModel;
+import com.pole.krono.model.TrackingSession;
 
+import java.text.DateFormat;
 import java.util.List;
 
-public class ProfilesFragment extends Fragment {
-
-    private Listener listener;
+public class TrackingSessionsFragment extends Fragment {
 
     private AppCompatActivity activity;
 
@@ -35,7 +34,8 @@ public class ProfilesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.layout_recycler_button, container, false);
+
+        View view = inflater.inflate(R.layout.layout_recycler, container, false);
 
         RecyclerView profilesRecyclerView = view.findViewById(R.id.recyclerView);
         // use a linear layout manager
@@ -49,104 +49,87 @@ public class ProfilesFragment extends Fragment {
         profilesRecyclerView.setHasFixedSize(true);
 
         // specify an adapter (see also next example)
-        final MyAdapter adapter = new MyAdapter(activity);
+        final TrackingSessionAdapter adapter = new TrackingSessionAdapter(activity);
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        MyViewModel viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
-        // update UI
-        viewModel.getProfiles().observe(this, adapter::setProfiles);
+        ProfileViewModel viewModel = ViewModelProviders.of(activity).get(ProfileViewModel.class);
 
-        view.findViewById(R.id.addButton).setOnClickListener(v -> listener.onAddProfileButtonPressed());
+        // update UI
+        viewModel.getTrackingSession().observe(activity, trackingSessions -> {
+            Log.v("Pole", "TSFrag: new tracking session: " + trackingSessions.size());
+            adapter.setTrackingSession(trackingSessions);
+        });
+
+        Log.v("Pole", "TSFrag: onCreateView");
 
         return view;
     }
 
-    private class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+    private class TrackingSessionAdapter extends RecyclerView.Adapter<TrackingSessionAdapter.ViewHolder> {
 
         private LayoutInflater layoutInflater;
-        private List<Profile> profiles; // cached copy of profiles
+        private List<TrackingSession> trackingSessions; // cached copy of profiles
 
-        MyAdapter(Context context) {
+        TrackingSessionAdapter(Context context) {
             layoutInflater = LayoutInflater.from(context);
         }
 
         @NonNull
         @Override
-        public MyAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // create a new view
             // set the view's size, margins, paddings and layout parameters
-            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item_profile, parent, false));
+            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_view_tracking_session_item, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MyAdapter.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             // - get element from your dataset at this position
             // - replace the contents of the view with that element
-            holder.setProfile(profiles.get(position));
+            holder.setTrackingSession(trackingSessions.get(position));
         }
 
-        void setProfiles(List<Profile> profiles){
-            this.profiles = profiles;
+        void setTrackingSession(List<TrackingSession> trackingSession){
+            this.trackingSessions = trackingSession;
             notifyDataSetChanged();
         }
 
         @Override
         public int getItemCount() {
-            if (profiles != null)
-                return profiles.size();
+            if (trackingSessions != null)
+                return trackingSessions.size();
             else return 0;
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
 
-            private TextView nameTextView;
             private TextView sportTextView;
-            private Profile profile;
+            private TextView activityTypeTextView;
+            private TextView startDateTextView;
+            private TextView endDateTextView;
 
             ViewHolder(View itemView) {
                 super(itemView);
 
-                profile = null;
-
-                nameTextView = itemView.findViewById(R.id.fullnameTextView);
                 sportTextView = itemView.findViewById(R.id.sportTextView);
+                activityTypeTextView = itemView.findViewById(R.id.activityTypeTextView);
+                startDateTextView = itemView.findViewById(R.id.startDateTextView);
+                endDateTextView = itemView.findViewById(R.id.endDateTextView);
 
-                itemView.setOnClickListener(v -> {
-
-                    Intent intent = new Intent();
-
-                    if(profile != null) {
-
-                        intent.putExtra("profile_name", profile.getName());
-                        intent.putExtra("profile_surname", profile.getSurname());
-                        intent.putExtra("profile_sport", profile.getSport());
-
-                        intent.setClass(activity, ProfileActivity.class);
-                        startActivity(intent);
-
-                    }
-                });
             }
 
-            public void setProfile(Profile profile) {
-                this.profile = profile;
-                if(profile != null) {
-                    nameTextView.setText(profile.getFullName());
-                    sportTextView.setText(profile.getSport());
+            void setTrackingSession(TrackingSession trackingSession) {
+                if(trackingSession != null) {
+                    sportTextView.setText(trackingSession.sport);
+                    activityTypeTextView.setText(trackingSession.activityType);
+                    startDateTextView.setText(DateFormat.getDateInstance().format(trackingSession.startTime));
+                    endDateTextView.setText(DateFormat.getDateInstance().format(trackingSession.endTime));
                 } else {
-                    nameTextView.setText(R.string.loading);
                     sportTextView.setText(R.string.loading);
+
                 }
             }
         }
-    }
-
-    void setListener(Listener listener) {
-        this.listener = listener;
-    }
-
-    public interface Listener {
-        void onAddProfileButtonPressed();
     }
 }

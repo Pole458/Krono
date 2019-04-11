@@ -12,14 +12,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 import com.pole.krono.R;
 import com.pole.krono.model.MyViewModel;
 import com.pole.krono.model.Profile;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ProfilesFragment.ProfilesFragmentListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ProfilesFragment.Listener, SelectProfileFragment.Listener, ChronometerFragment.Listener {
 
     private MyViewModel viewModel;
 
@@ -32,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private Toolbar toolbar;
 
+    private ActionBarDrawerToggle toggle;
+
     private static int ADD_PROFILE_REQUEST = 1;
 
     @Override
@@ -39,14 +40,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d("MainActivity", "onCreate");
-
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         drawer = findViewById(R.id.drawer_layout);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -72,6 +71,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 profileFullName.setText(profile.getFullName());
                 profileSport.setText(profile.getSport());
             }
+        });
+
+        navigationView.getHeaderView(0).findViewById(R.id.profileImageView).setOnClickListener(v -> {
+            SelectProfileFragment bottomNavigationDrawerFragment = new SelectProfileFragment();
+            bottomNavigationDrawerFragment.show(getSupportFragmentManager(), bottomNavigationDrawerFragment.getTag());
+
         });
     }
 
@@ -113,8 +118,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onAttachFragment(fragment);
 
         if(fragment instanceof ProfilesFragment)
-            ((ProfilesFragment) fragment).setProfileFragmentListener(this);
+            ((ProfilesFragment) fragment).setListener(this);
 
+        if(fragment instanceof SelectProfileFragment)
+            ((SelectProfileFragment) fragment).setListener(this);
+
+        if(fragment instanceof ChronometerFragment)
+            ((ChronometerFragment) fragment).setListener(this);
     }
 
     private void changeFragment(Fragment newFragment, int nav, int stringId) {
@@ -139,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void setSelectedProfile(Profile profile) {
         viewModel.setSelectedProfile(profile);
         changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
+        drawer.closeDrawer(GravityCompat.START);
     }
 
     private void startAddProfileActivity() {
@@ -159,5 +170,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changeFragment(new ProfilesFragment(), R.id.nav_profiles, R.string.profiles);
 
         }
+    }
+
+    @Override
+    public void onStartTracking() {
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        toggle.setDrawerIndicatorEnabled(false);
+    }
+
+    @Override
+    public void onStopTracking() {
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        toggle.setDrawerIndicatorEnabled(true);
     }
 }

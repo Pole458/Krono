@@ -11,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 @Database(entities = {Sport.class, Profile.class, ActivityType.class, TrackingSession.class, Lap.class}, version = 1, exportSchema = false)
-@TypeConverters({DateConverter.class})
 public abstract class DB extends RoomDatabase {
 
     private static volatile DB INSTANCE;

@@ -202,7 +202,6 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         remaining = remaining % (60000);
 
         int seconds = remaining / 1000;
-//        remaining = remaining % (1000);
 
         int milliseconds = ((int)time % 1000) / 10;
 
@@ -213,10 +212,36 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         }
 
         text += df.format(minutes) + ":";
-        text += df.format(seconds) + ":";
+        text += df.format(seconds) + ",";
         text += df.format(milliseconds);
 
         return text;
     }
 
+    public static String getGapString(long gap) {
+
+        long time  = Math.abs(gap);
+        String text = "";
+        long remaining = time;
+
+        if (time > 3600000) {
+            int hours = (int)(time / (3600000));
+            remaining = (int)(time % (3600000));
+            text += df.format(hours) + ":";
+        }
+
+        if (time > 60000) {
+            int minutes = (int) (remaining / (60000));
+            remaining = remaining % (60000);
+            text += df.format(minutes) + ":";
+        }
+
+        int seconds = (int) (remaining / 1000);
+        text += df.format(seconds) + ",";
+
+        int milliseconds = ((int)time % 1000) / 10;
+        text += df.format(milliseconds);
+
+        return gap > 0 ? "+" + text : "-" + text;
+    }
 }

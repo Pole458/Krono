@@ -4,7 +4,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
-import java.util.Date;
 import java.util.List;
 
 @android.arch.persistence.room.Dao
@@ -35,7 +34,7 @@ public interface Dao {
     long insertTrackingSession(TrackingSession trackingSession);
 
     @Query("UPDATE trackingsession SET endTime = :endTime WHERE id == :id")
-    void stopTrackingSession(long id, Date endTime);
+    void stopTrackingSession(long id, long endTime);
 
     @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname ORDER BY startTime DESC")
     List<TrackingSession> getTrackingSession(String name, String surname);
@@ -45,4 +44,7 @@ public interface Dao {
 
     @Query("SELECT * FROM lap WHERE trackingSessionId == :sessionId ORDER BY lapNumber DESC")
     List<Lap> getLaps(Long sessionId);
+
+    @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname AND startTime >= :startTime AND endTime < :endTime ORDER BY startTime ASC")
+    List<TrackingSession> getTrackingSession(String name, String surname, long startTime, long endTime);
 }

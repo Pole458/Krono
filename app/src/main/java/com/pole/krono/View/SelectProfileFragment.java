@@ -2,11 +2,10 @@ package com.pole.krono.View;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,9 +19,13 @@ import com.pole.krono.model.Profile;
 
 import java.util.List;
 
-public class ProfilesFragment extends Fragment {
+public class SelectProfileFragment extends BottomSheetDialogFragment {
 
     private Listener listener;
+
+    private MyViewModel viewModel;
+
+    private RecyclerView profilesRecyclerView;
 
     private AppCompatActivity activity;
 
@@ -35,9 +38,9 @@ public class ProfilesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.layout_recycler_button, container, false);
+        View view = inflater.inflate(R.layout.drawer_bottom, container, false);
 
-        RecyclerView profilesRecyclerView = view.findViewById(R.id.recyclerView);
+        profilesRecyclerView = view.findViewById(R.id.profiles_recyclerView);
         // use a linear layout manager
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -53,11 +56,9 @@ public class ProfilesFragment extends Fragment {
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        MyViewModel viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
         // update UI
         viewModel.getProfiles().observe(this, adapter::setProfiles);
-
-        view.findViewById(R.id.addButton).setOnClickListener(v -> listener.onAddProfileButtonPressed());
 
         return view;
     }
@@ -76,7 +77,7 @@ public class ProfilesFragment extends Fragment {
         public MyAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // create a new view
             // set the view's size, margins, paddings and layout parameters
-            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item_profile, parent, false));
+            return new MyAdapter.ViewHolder(layoutInflater.inflate(R.layout.recycler_item_profile, parent, false));
         }
 
         @Override
@@ -113,19 +114,8 @@ public class ProfilesFragment extends Fragment {
                 sportTextView = itemView.findViewById(R.id.sportTextView);
 
                 itemView.setOnClickListener(v -> {
-
-                    Intent intent = new Intent();
-
-                    if(profile != null) {
-
-                        intent.putExtra("profile_name", profile.getName());
-                        intent.putExtra("profile_surname", profile.getSurname());
-                        intent.putExtra("profile_sport", profile.getSport());
-
-                        intent.setClass(activity, ProfileActivity.class);
-                        startActivity(intent);
-
-                    }
+                    listener.setSelectedProfile(profile);
+                    dismiss();
                 });
             }
 
@@ -138,6 +128,7 @@ public class ProfilesFragment extends Fragment {
                     nameTextView.setText(R.string.loading);
                     sportTextView.setText(R.string.loading);
                 }
+
             }
         }
     }
@@ -147,6 +138,6 @@ public class ProfilesFragment extends Fragment {
     }
 
     public interface Listener {
-        void onAddProfileButtonPressed();
+        void setSelectedProfile(Profile profile);
     }
 }
