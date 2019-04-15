@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
+import com.pole.krono.model.MainViewModel;
 import com.pole.krono.model.Profile;
 
 import java.util.List;
@@ -22,10 +22,6 @@ import java.util.List;
 public class SelectProfileFragment extends BottomSheetDialogFragment {
 
     private Listener listener;
-
-    private MyViewModel viewModel;
-
-    private RecyclerView profilesRecyclerView;
 
     private AppCompatActivity activity;
 
@@ -40,7 +36,7 @@ public class SelectProfileFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.drawer_bottom, container, false);
 
-        profilesRecyclerView = view.findViewById(R.id.profiles_recyclerView);
+        RecyclerView profilesRecyclerView = view.findViewById(R.id.profiles_recyclerView);
         // use a linear layout manager
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -56,7 +52,7 @@ public class SelectProfileFragment extends BottomSheetDialogFragment {
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        MainViewModel viewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
         // update UI
         viewModel.getProfiles().observe(this, adapter::setProfiles);
 

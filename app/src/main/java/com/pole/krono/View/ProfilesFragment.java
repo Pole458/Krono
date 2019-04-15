@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
+import com.pole.krono.model.MainViewModel;
 import com.pole.krono.model.Profile;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class ProfilesFragment extends Fragment {
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        MyViewModel viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        MainViewModel viewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
         // update UI
         viewModel.getProfiles().observe(this, adapter::setProfiles);
 

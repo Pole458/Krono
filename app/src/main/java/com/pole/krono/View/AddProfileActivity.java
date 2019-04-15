@@ -12,7 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
+import com.pole.krono.model.MainViewModel;
 import com.pole.krono.model.Sport;
 
 public class AddProfileActivity extends AppCompatActivity {
@@ -31,7 +31,7 @@ public class AddProfileActivity extends AppCompatActivity {
 
         sportSpinner = findViewById(R.id.sportSpinner);
 
-        MyViewModel viewModel = ViewModelProviders.of(this).get(MyViewModel.class);
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         viewModel.getSports().observe(this, sports -> {
             if(sports != null) {

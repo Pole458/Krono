@@ -24,7 +24,8 @@ import java.util.List;
 
 public class ChronometerFragment extends Fragment {
 
-    private MyViewModel viewModel;
+    private MainViewModel mainViewModel;
+    private ChronometerViewModel chronoViewModel;
 
     private MillisecondChronometer milliChronometer;
 
@@ -47,7 +48,6 @@ public class ChronometerFragment extends Fragment {
     private AppCompatActivity activity;
 
     private Listener listener;
-
 
     @Override
     public void onAttach(Context context) {
@@ -99,7 +99,7 @@ public class ChronometerFragment extends Fragment {
 
         lapButton = view.findViewById(R.id.lapTrackingButton);
 
-        lapButton.setOnClickListener(v -> viewModel.addLap(milliChronometer.lap(), milliChronometer.getLaps()));
+        lapButton.setOnClickListener(v -> chronoViewModel.insertLap(milliChronometer.lap(), milliChronometer.getLaps()));
 
         sportSpinner = view.findViewById(R.id.sportSpinner);
         sportArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
@@ -110,22 +110,23 @@ public class ChronometerFragment extends Fragment {
         activityTypeArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
         activityTypeSpinner.setAdapter(activityTypeArrayAdapter);
 
-        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        mainViewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
+        chronoViewModel = ViewModelProviders.of(activity).get(ChronometerViewModel.class);
 
-        viewModel.getSelectedProfile().observe(activity, selectedProfile -> {
+        mainViewModel.getSelectedProfile().observe(activity, selectedProfile -> {
             if(selectedProfile != null) {
                 fullnameTextView.setText(selectedProfile.getFullName());
-                viewModel.getSelectedSport().setValue(new Sport(selectedProfile.getSport()));
+                chronoViewModel.getSelectedSport().setValue(new Sport(selectedProfile.getSport()));
             }
         });
 
-        viewModel.getSports().observe(this, sports -> {
+        chronoViewModel.getSports().observe(this, sports -> {
             if(sports != null) {
                 sportArrayAdapter.addAll(sports);
                 sportArrayAdapter.notifyDataSetChanged();
                 Log.v("Pole", "Sport spinner updated");
-                if(viewModel.getSelectedSport().getValue() != null)
-                    selectSpinnerItemByValue(sportSpinner, viewModel.getSelectedSport().getValue().name);
+                if(chronoViewModel.getSelectedSport().getValue() != null)
+                    selectSpinnerItemByValue(sportSpinner, chronoViewModel.getSelectedSport().getValue().name);
             }
         });
 
@@ -138,7 +139,7 @@ public class ChronometerFragment extends Fragment {
                 if(init) {
                     init = false;
                 } else
-                    viewModel.getSelectedSport().setValue(sportArrayAdapter.getItem(position));
+                    chronoViewModel.getSelectedSport().setValue(sportArrayAdapter.getItem(position));
             }
 
             @Override
@@ -147,15 +148,14 @@ public class ChronometerFragment extends Fragment {
             }
         });
 
-        viewModel.getSelectedSport().observe(activity, sport -> {
+        chronoViewModel.getSelectedSport().observe(activity, sport -> {
             if(sport != null) {
                 Log.v("Pole", "Selected sport: " + sport.name);
-                viewModel.updateActivityTypes();
                 selectSpinnerItemByValue(sportSpinner, sport.name);
             }
         });
 
-        viewModel.getActivityTypes().observe(activity, activityTypes -> {
+        chronoViewModel.getActivityTypes().observe(activity, activityTypes -> {
             activityTypeArrayAdapter.clear();
             if (activityTypes != null && activityTypes.size() > 0) {
                 activityTypeArrayAdapter.addAll(activityTypes);
@@ -180,8 +180,8 @@ public class ChronometerFragment extends Fragment {
         final LapAdapter adapter = new LapAdapter(activity);
         lapsRecyclerView.setAdapter(adapter);
         lapsRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
-        viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
-        viewModel.getLaps().observe(this, laps -> {
+        mainViewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
+        chronoViewModel.getLaps().observe(this, laps -> {
             if (laps != null) {
                 adapter.setLaps(laps);
                 lapsRecyclerView.scrollToPosition(0);
@@ -206,8 +206,8 @@ public class ChronometerFragment extends Fragment {
         startButton.setText(R.string.stop_tracking);
         milliChronometer.restart();
 
-        Profile profile = viewModel.getSelectedProfile().getValue();
-        Sport sport = viewModel.getSelectedSport().getValue();
+        Profile profile = mainViewModel.getSelectedProfile().getValue();
+        Sport sport = chronoViewModel.getSelectedSport().getValue();
         ActivityType activityType = null;
         if(activityTypeArrayAdapter.getCount() > 0)
             activityType = activityTypeArrayAdapter.getItem(activityTypeSpinner.getSelectedItemPosition());
@@ -226,7 +226,7 @@ public class ChronometerFragment extends Fragment {
 
             session.startTime = Calendar.getInstance().getTimeInMillis();
 
-            viewModel.insertTrackingSession(session);
+            chronoViewModel.insertTrackingSession(session);
         }
 
         pauseResumeButton.setVisibility(View.VISIBLE);
@@ -234,13 +234,16 @@ public class ChronometerFragment extends Fragment {
 
         sportSpinner.setVisibility(View.INVISIBLE);
         activityTypeSpinner.setVisibility(View.INVISIBLE);
-        getView().findViewById(R.id.sportTextView).setVisibility(View.INVISIBLE);
-        getView().findViewById(R.id.activityTypeTextView).setVisibility(View.INVISIBLE);
+        View view = getView();
+        if(view != null) {
+            getView().findViewById(R.id.sportTextView).setVisibility(View.INVISIBLE);
+            getView().findViewById(R.id.activityTypeTextView).setVisibility(View.INVISIBLE);
+            view.findViewById(R.id.line).setVisibility(View.VISIBLE);
+        }
 
         sportActivityTextView.setVisibility(View.VISIBLE);
 
         lapsRecyclerView.setVisibility(View.VISIBLE);
-        getView().findViewById(R.id.line).setVisibility(View.VISIBLE);
 
         listener.onStartTracking();
 
@@ -252,21 +255,24 @@ public class ChronometerFragment extends Fragment {
         pauseResumeButton.setText(R.string.pause);
         milliChronometer.stop();
 
-        viewModel.addLap(milliChronometer.lap(), milliChronometer.getLaps());
-        viewModel.stopTracking();
+        chronoViewModel.insertLap(milliChronometer.lap(), milliChronometer.getLaps());
+        chronoViewModel.stopTracking();
 
         pauseResumeButton.setVisibility(View.GONE);
         lapButton.setVisibility(View.GONE);
 
         sportSpinner.setVisibility(View.VISIBLE);
         activityTypeSpinner.setVisibility(View.VISIBLE);
-        getView().findViewById(R.id.sportTextView).setVisibility(View.VISIBLE);
-        getView().findViewById(R.id.activityTypeTextView).setVisibility(View.VISIBLE);
+        View view = getView();
+        if(view != null) {
+            getView().findViewById(R.id.sportTextView).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.activityTypeTextView).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.line).setVisibility(View.GONE);
+        }
 
         sportActivityTextView.setVisibility(View.GONE);
 
         lapsRecyclerView.setVisibility(View.GONE);
-        getView().findViewById(R.id.line).setVisibility(View.GONE);
 
         listener.onStopTracking();
     }

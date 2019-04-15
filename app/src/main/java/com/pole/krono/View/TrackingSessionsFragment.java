@@ -23,7 +23,11 @@ import java.util.List;
 
 public class TrackingSessionsFragment extends Fragment {
 
+    private static final String TAG = "Pole: TSFragment";
+
     private AppCompatActivity activity;
+
+    private ProfileViewModel viewModel;
 
     @Override
     public void onAttach(Context context) {
@@ -34,6 +38,8 @@ public class TrackingSessionsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        Log.v(TAG, "onCreateView");
 
         View view = inflater.inflate(R.layout.layout_recycler, container, false);
 
@@ -53,15 +59,10 @@ public class TrackingSessionsFragment extends Fragment {
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        ProfileViewModel viewModel = ViewModelProviders.of(activity).get(ProfileViewModel.class);
+        viewModel = ViewModelProviders.of(activity).get(ProfileViewModel.class);
 
         // update UI
-        viewModel.getTrackingSession().observe(activity, trackingSessions -> {
-            Log.v("Pole", "TSFrag: new tracking session: " + trackingSessions.size());
-            adapter.setTrackingSession(trackingSessions);
-        });
-
-        Log.v("Pole", "TSFrag: onCreateView");
+        viewModel.getAllTrackingSession().observe(activity, adapter::setTrackingSession);
 
         return view;
     }

@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
+import com.pole.krono.model.MainViewModel;
 import com.pole.krono.model.Sport;
 
 import java.util.List;
@@ -51,7 +51,7 @@ public class SportsFragment extends Fragment {
         sportRecyclerView.setAdapter(adapter);
         sportRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        MyViewModel viewModel = ViewModelProviders.of(activity).get(MyViewModel.class);
+        MainViewModel viewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
         // update UI
         viewModel.getSports().observe(this, adapter::setSports);
 

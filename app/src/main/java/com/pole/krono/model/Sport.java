@@ -15,7 +15,7 @@ public class Sport {
         this.name = name;
     }
 
-    public static Sport[] populate() {
+    static Sport[] populate() {
         return new Sport[]{
                 new Sport("Run"),
                 new Sport("Cycling"),
@@ -29,6 +29,7 @@ public class Sport {
 //                            db.execSQL("insert into sport values('Swim - Backstroke')");
     }
 
+    @NonNull
     @Override
     public String toString() {
         return name;

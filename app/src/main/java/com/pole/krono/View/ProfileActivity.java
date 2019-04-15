@@ -9,16 +9,24 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import com.pole.krono.R;
 import com.pole.krono.model.Profile;
 import com.pole.krono.model.ProfileViewModel;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    private static final String TAG = "Pole: ProfileActivity";
+
+    private TrackingSessionsFragment trackingSessionsFragment;
+    private TrackingSessionCalendarFragment trackingSessionCalendarFragment;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        Log.v(TAG, "onCreate");
 
         ProfileViewModel viewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
 
@@ -36,11 +44,14 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public Fragment getItem(int i) {
+                Log.v(TAG, "getItem: " + i);
                 switch (i) {
                     case 0:
-                        return new TrackingSessionsFragment();
+                        trackingSessionsFragment = new TrackingSessionsFragment();
+                        return trackingSessionsFragment;
                     case 1:
-                        return new TrackingSessionCalendarFragment();
+                        trackingSessionCalendarFragment = new TrackingSessionCalendarFragment();
+                        return trackingSessionCalendarFragment;
                 }
                 return null;
             }
@@ -62,5 +73,6 @@ public class ProfileActivity extends AppCompatActivity {
             }
         };
         pager.setAdapter(pagerAdapter);
+
     }
 }

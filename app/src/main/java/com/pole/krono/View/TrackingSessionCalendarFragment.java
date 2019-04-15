@@ -2,6 +2,7 @@ package com.pole.krono.View;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,13 +19,24 @@ import com.pole.krono.R;
 import com.pole.krono.model.ProfileViewModel;
 import com.pole.krono.model.TrackingSession;
 import com.skyhope.eventcalenderlibrary.CalenderEvent;
+import com.skyhope.eventcalenderlibrary.model.Event;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class TrackingSessionCalendarFragment extends Fragment {
 
+    private static final String TAG = "Pole: TSCalendarFrag";
+
+    private ProfileViewModel viewModel;
+
     private AppCompatActivity activity;
+
+    private CalenderEvent calenderEvent;
+
+    private TextView dayTextView;
 
     @Override
     public void onAttach(Context context) {
@@ -35,7 +47,12 @@ public class TrackingSessionCalendarFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        Log.v(TAG, "onCreateView");
+
         View view = inflater.inflate(R.layout.layout_tracking_session_calendar, container, false);
+
+        dayTextView = view.findViewById(R.id.dayTextView);
 
         RecyclerView profilesRecyclerView = view.findViewById(R.id.recyclerView);
         // use a linear layout manager
@@ -53,13 +70,30 @@ public class TrackingSessionCalendarFragment extends Fragment {
         profilesRecyclerView.setAdapter(adapter);
         profilesRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        ProfileViewModel viewModel = ViewModelProviders.of(activity).get(ProfileViewModel.class);
+        viewModel = ViewModelProviders.of(activity).get(ProfileViewModel.class);
 
         // update UI
-        viewModel.getTrackingSession().observe(activity, adapter::setTrackingSession);
+        viewModel.getTodayTrackingSession().observe(activity, adapter::setTrackingSession);
 
-        CalenderEvent calender = view.findViewById(R.id.calender_event);
-        calender.initCalderItemClickCallback(dayContainerModel -> viewModel.updateTrackingSession(dayContainerModel.getTimeInMillisecond()));
+        calenderEvent = view.findViewById(R.id.calender_event);
+        calenderEvent.initCalderItemClickCallback(dayContainerModel -> {
+            viewModel.getStartTime().setValue(dayContainerModel.getTimeInMillisecond());
+            dayTextView.setText(dayContainerModel.getDate());
+        });
+
+        // Get tracking sessions for today
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.MILLISECOND, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        Log.v(TAG, "new startTime set to today");
+        viewModel.getStartTime().setValue(today.getTimeInMillis());
+
+        viewModel.getAllTrackingSession().observe(this, trackingSessions -> {
+           if(trackingSessions != null)
+                new SetEventsAsyncTask(trackingSessions).execute(calenderEvent);
+        });
 
         return view;
     }
@@ -67,7 +101,7 @@ public class TrackingSessionCalendarFragment extends Fragment {
     private class TrackingSessionAdapter extends RecyclerView.Adapter<TrackingSessionAdapter.ViewHolder> {
 
         private LayoutInflater layoutInflater;
-        private List<TrackingSession> trackingSessions; // cached copy of profiles
+        private List<TrackingSession> trackingSessions;
 
         TrackingSessionAdapter(Context context) {
             layoutInflater = LayoutInflater.from(context);
@@ -130,4 +164,54 @@ public class TrackingSessionCalendarFragment extends Fragment {
             }
         }
     }
+
+
+    private static class SetEventsAsyncTask extends AsyncTask<CalenderEvent, Void, CalenderEvent> {
+
+        private List<Event> events;
+        private List<TrackingSession> trackingSessions;
+
+        SetEventsAsyncTask(List<TrackingSession> trackingSessions) {
+            this.trackingSessions = trackingSessions;
+        }
+
+
+        @Override
+        protected CalenderEvent doInBackground(CalenderEvent... calenderEvents) {
+
+            events = new ArrayList<>();
+
+            /*Calendar month = Calendar.getInstance();
+            month.set(Calendar.MILLISECOND, 0);
+            month.set(Calendar.SECOND, 0);
+            month.set(Calendar.MINUTE, 0);
+            month.set(Calendar.HOUR_OF_DAY, 0);
+            month.set(Calendar.DAY_OF_MONTH, 0);
+
+            Calendar nextMonth = Calendar.getInstance();
+            nextMonth.set(Calendar.MILLISECOND, 0);
+            nextMonth.set(Calendar.SECOND, 0);
+            nextMonth.set(Calendar.MINUTE, 0);
+            nextMonth.set(Calendar.HOUR_OF_DAY, 0);
+            nextMonth.set(Calendar.DAY_OF_MONTH, 0);
+            nextMonth.set(Calendar.MONTH, nextMonth.get(Calendar.MONTH) + 1);*/
+
+            for (TrackingSession session : trackingSessions) {
+                //if(month.getTimeInMillis() < session.startTime && session.startTime < nextMonth.getTimeInMillis())
+                    events.add(new Event(session.startTime, session.sport));
+            }
+
+            return calenderEvents[0];
+        }
+
+        @Override
+        protected void onPostExecute(CalenderEvent calenderEvent) {
+            super.onPostExecute(calenderEvent);
+
+            for(Event event : events) {
+                calenderEvent.addEvent(event);
+            }
+        }
+    }
+
 }

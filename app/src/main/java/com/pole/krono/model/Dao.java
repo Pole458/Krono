@@ -28,7 +28,7 @@ public interface Dao {
     void insertActivities(ActivityType... activityTypes);
 
     @Query("SELECT * FROM activitytype WHERE sport == :sport")
-    List<ActivityType> getActivityTypes(String sport);
+    LiveData<List<ActivityType>> getActivityTypes(String sport);
 
     @Insert
     long insertTrackingSession(TrackingSession trackingSession);
@@ -37,14 +37,14 @@ public interface Dao {
     void stopTrackingSession(long id, long endTime);
 
     @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname ORDER BY startTime DESC")
-    List<TrackingSession> getTrackingSession(String name, String surname);
+    LiveData<List<TrackingSession>> getTrackingSession(String name, String surname);
 
     @Insert
-    void insertLap(Lap... laps);
+    void insertLaps(Lap... laps);
 
     @Query("SELECT * FROM lap WHERE trackingSessionId == :sessionId ORDER BY lapNumber DESC")
-    List<Lap> getLaps(Long sessionId);
+    LiveData<List<Lap>>getLaps(Long sessionId);
 
     @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname AND startTime >= :startTime AND endTime < :endTime ORDER BY startTime ASC")
-    List<TrackingSession> getTrackingSession(String name, String surname, long startTime, long endTime);
+    LiveData<List<TrackingSession>> getTrackingSession(String name, String surname, long startTime, long endTime);
 }

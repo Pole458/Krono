@@ -15,12 +15,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MyViewModel;
+import com.pole.krono.model.MainViewModel;
 import com.pole.krono.model.Profile;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ProfilesFragment.Listener, SelectProfileFragment.Listener, ChronometerFragment.Listener {
 
-    private MyViewModel viewModel;
+    private MainViewModel viewModel;
 
     private DrawerLayout drawer;
 
@@ -54,12 +54,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         profileFullName = navigationView.getHeaderView(0).findViewById(R.id.profileName);
         profileSport = navigationView.getHeaderView(0).findViewById(R.id.profileSport);
 
-        viewModel = ViewModelProviders.of(this).get(MyViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
 
         if(getIntent().hasExtra("profile_name")) {
-            viewModel.addProfile(new Profile(getIntent().getStringExtra("profile_name"),
+            viewModel.insertProfile(getApplicationContext(), new Profile(getIntent().getStringExtra("profile_name"),
                     getIntent().getStringExtra("profile_surname"),
                     getIntent().getStringExtra("profile_sport")));
         }
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void setSelectedProfile(Profile profile) {
-        viewModel.setSelectedProfile(profile);
+        viewModel.setSelectedProfile(getApplicationContext(), profile);
         changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
         drawer.closeDrawer(GravityCompat.START);
     }
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if(requestCode == ADD_PROFILE_REQUEST && resultCode == RESULT_OK) {
 
-            viewModel.addProfile(new Profile(data.getStringExtra("profile_name"),
+            viewModel.insertProfile(getApplicationContext(), new Profile(data.getStringExtra("profile_name"),
                     data.getStringExtra("profile_surname"),
                     data.getStringExtra("profile_sport")));
 
