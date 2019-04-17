@@ -4,15 +4,16 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 import com.pole.krono.MillisecondChronometer;
 
 import java.util.Calendar;
 import java.util.List;
 
-public class Repository {
+class Repository {
 
     @SuppressWarnings("FieldCanBeLocal")
     private static String TAG = "POLE: Repository";
@@ -21,8 +22,7 @@ public class Repository {
 
     private final Dao dao;
 
-    @NonNull
-    private final MutableLiveData<Profile> selectedProfile = new MutableLiveData<>();
+    private MutableLiveData<Profile> selectedProfile;
 
     private Repository(Context context) {
         dao = DB.getDatabase(context).dao();
@@ -39,31 +39,77 @@ public class Repository {
         return INSTANCE;
     }
 
-    LiveData<Profile> getSelectedProfile(Context context) {
-        if(selectedProfile.getValue() == null) {
-            Log.v(TAG, "loading selectedProfile");
+    static void deleteSport(Repository repo, Sport sport) {
+        new AsyncTask<Sport, Void, Void>(){
+
+            @Override
+            protected Void doInBackground(Sport... sports) {
+                repo.dao.deleteSport(sport);
+                return null;
+            }
+        }.execute(sport);
+    }
+
+    static void insertActivityType(Repository repo, ActivityType activityType) {
+        new AsyncTask<ActivityType, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(ActivityType... activityTypes) {
+                repo.dao.insertActivities(activityTypes);
+                return null;
+            }
+        }.execute(activityType);
+    }
+
+    static void insertSport(Repository repo, Sport sport) {
+        new AsyncTask<Sport, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Sport... sports) {
+                repo.dao.insertSports(sports);
+                return null;
+            }
+        }.execute(sport);
+
+    }
+
+    static LiveData<Profile> getSelectedProfile(Context context, Repository repo) {
+        if(repo.selectedProfile == null) {
+            repo.selectedProfile = new MutableLiveData<>();
             SharedPreferences settings = context.getSharedPreferences("krono_pref", 0);
             String name = settings.getString("profile_name", null);
             String surname = settings.getString("profile_surname", null);
 
-            Log.v(TAG, "selectedProfile in sharedPref: " + name + " " + surname);
+            new AsyncTask<String, Void, Void>() {
+                @Override
+                protected Void doInBackground(String... strings) {
+                    Profile profile = repo.dao.getProfile(strings[0], strings[1]);
 
-            new LoadProfileAsyncTask(dao, selectedProfile).execute(name, surname);
+                    if(profile != null)
+                        Log.v(TAG, "selected profile assigned: " + profile.getFullName());
+                    else
+                        Log.v(TAG, "selected profile assigned: null");
+
+                    repo.selectedProfile.postValue(profile);
+                    return null;
+                }
+            }.execute(name, surname);
+
+            Log.v(TAG, "selectedProfile in sharedPref: " + name + " " + surname);
         }
-        Log.v(TAG, "returning selected profile");
-        return selectedProfile;
+        return repo.selectedProfile;
     }
 
     void setSelectedProfile(Context context, Profile profile) {
 
         SharedPreferences settings = context.getSharedPreferences("krono_pref", 0);
         settings.edit().putString("profile_name", profile.getName()).putString("profile_surname", profile.getSurname()).apply();
+        Log.v(TAG, "SelectedProfile set in sharedPref: " + profile.getFullName());
 
         selectedProfile.setValue(profile);
     }
 
-
-    public LiveData<List<Profile>> getProfiles() {
+    LiveData<List<Profile>> getProfiles() {
         return dao.getProfiles();
     }
 
@@ -71,155 +117,97 @@ public class Repository {
         return dao.getActivityTypes(selectedSport.name);
     }
 
-    private static class LoadProfileAsyncTask extends AsyncTask<String, Void, Void> {
-
-        MutableLiveData<Profile> asyncTaskSelectedProfile;
-        Dao asyncTaskDao;
-
-        LoadProfileAsyncTask(Dao dao, MutableLiveData<Profile> profileLiveData) {
-            asyncTaskDao = dao;
-            asyncTaskSelectedProfile = profileLiveData;
-        }
-
-        @Override
-        protected Void doInBackground(String... strings) {
-
-            Profile profile = asyncTaskDao.getProfile(strings[0], strings[1]);
-
-            if(profile != null)
-                Log.v(TAG, "selected profile assigned: " + profile.getFullName());
-            else
-                Log.v(TAG, "selected profile assigned: null");
-
-            asyncTaskSelectedProfile.postValue(profile);
-
-            return null;
-        }
+    LiveData<TrackingSession> getTrackingSession(Long id) {
+        return dao.getTrackingSession(id);
     }
 
-    void insertProfile(Profile profile) {
-        new InsertProfileTask(dao).execute(profile);
+    static boolean deleteProfile(Repository repo, Profile profile) {
+        if(repo.selectedProfile.getValue() != null && profile.getFullName().equals(repo.selectedProfile.getValue().getFullName())) {
+            return false;
+        }
+
+        new AsyncTask<Profile, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Profile... profiles) {
+                repo.dao.deleteProfiles(profiles);
+                return null;
+            }
+        }.execute();
+
+        return true;
     }
 
-    private static class InsertProfileTask extends AsyncTask<Profile, Void, Void> {
+    static void deleteActivityType(Repository repo, ActivityType activityType) {
 
-        private Dao mAsyncTaskDao;
+        new AsyncTask<ActivityType, Void, Void>() {
+            @Override
+            protected Void doInBackground(ActivityType... activityTypes) {
+                repo.dao.deleteActivityTypes(activityTypes);
+                return null;
+            }
+        }.execute(activityType);
+    }
 
-        InsertProfileTask(Dao dao) {
-            mAsyncTaskDao = dao;
-        }
-
-        @Override
-        protected Void doInBackground(final Profile... profiles) {
-            mAsyncTaskDao.insertProfiles(profiles);
-            return null;
-        }
+    static void insertProfile(Context context, Repository repo, Profile profile) {
+        new AsyncTask<Profile, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Profile... profiles) {
+                try {
+                    repo.dao.insertProfiles(profiles);
+                } catch (SQLiteConstraintException ignored) {
+                   return false;
+                }
+                return true;
+            }
+            @Override
+            protected void onPostExecute(Boolean success) {
+                if(!success)
+                    Toast.makeText(context, "There is already a Profile with this name", Toast.LENGTH_LONG).show();
+            }
+        }.execute(profile);
     }
 
     LiveData<List<Sport>> getSports() {
         return dao.getSports();
     }
 
-    void insertTrackingSession(TrackingSession session, MutableLiveData<Long> trackingSessionId) {
-        new InsertTrackingSessionTask(dao, trackingSessionId).execute(session);
+    static void insertTrackingSession(Repository repo, TrackingSession session, MutableLiveData<Long> trackingSessionId) {
+        new AsyncTask<TrackingSession, Void, Void>() {
+            @Override
+            protected Void doInBackground(TrackingSession... trackingSessions) {
+                long id = repo.dao.insertTrackingSession(trackingSessions[0]);
+                trackingSessionId.postValue(id);
+                Log.v(TAG, "got tracking session id: " + id);
+                return null;
+            }
+        }.execute(session);
     }
-
-    private static class InsertTrackingSessionTask extends AsyncTask<TrackingSession, Void, Void> {
-
-        private Dao mAsyncTaskDao;
-        private MutableLiveData<Long> asyncTaskId;
-//        private long id;
-
-        InsertTrackingSessionTask(Dao dao, MutableLiveData<Long> id) {
-            mAsyncTaskDao = dao;
-            asyncTaskId = id;
-        }
-
-        @Override
-        protected Void doInBackground(final TrackingSession... sessions) {
-            long id = mAsyncTaskDao.insertTrackingSession(sessions[0]);
-            asyncTaskId.postValue(id);
-            Log.v(TAG, "got tracking session id: " + id);
-            return null;
-        }
-
-//        @Override
-//        protected void onPostExecute(Void aVoid) {
-//            new UpdateLaps(mAsyncTaskDao, asyncLaps).execute(id);
-//        }
-    }
-
-//    private static class UpdateLaps extends AsyncTask<Long, Void, Void> {
-//
-//        private Dao mAsyncTaskDao;
-//        private MutableLiveData<List<Lap>> asyncLaps;
-//
-//        UpdateLaps(Dao dao, MutableLiveData<List<Lap>> laps) {
-//            mAsyncTaskDao = dao;
-//            asyncLaps = laps;
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Long... sessionId) {
-//            asyncLaps.postValue(mAsyncTaskDao.getLaps(sessionId[0]));
-//            return null;
-//        }
-//    }
 
     LiveData<List<Lap>> getLaps(Long trackingSessionId) {
-//        if(laps != null) {
-//            laps = new MutableLiveData<>();
-//            new UpdateLaps(dao, laps).execute(trackingSessionId.getValue());
-//        }
         return dao.getLaps(trackingSessionId);
     }
 
-    void insertLap(long lapTime, int lapCounter, MutableLiveData<Long> trackingSessionId) {
-        if(trackingSessionId.getValue() != null) {
-            new InsertLapTask(dao).execute(new Lap(trackingSessionId.getValue(), lapCounter, lapTime));
-//            new UpdateLaps(dao, laps).execute(trackingSessionId.getValue());
-        }
+    static void insertLap(Repository repo, long lapTime, int lapCounter, Long trackingSessionId) {
+        new AsyncTask<Lap, Void, Void>() {
+            @Override
+            protected Void doInBackground(Lap... laps) {
+                repo.dao.insertLaps(laps);
+                Log.v(TAG, "added lap: " + MillisecondChronometer.getTimeString(laps[0].time) + " to track session " + laps[0].trackingSessionId);
+                return null;
+            }
+        }.execute(new Lap(trackingSessionId, lapCounter, lapTime));
     }
 
-    private static class InsertLapTask extends AsyncTask<Lap, Void, Void> {
-
-        private Dao mAsyncTaskDao;
-
-        InsertLapTask(Dao dao) {
-            mAsyncTaskDao = dao;
-        }
-
-        @Override
-        protected Void doInBackground(final Lap... laps) {
-            mAsyncTaskDao.insertLaps(laps);
-            Log.v(TAG, "added lap: " + MillisecondChronometer.getTimeString(laps[0].time) + " to track session " + laps[0].trackingSessionId);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-        }
-    }
-
-    void stopTracking(long trackingSessionId) {
-        new StopTrackingSessionTask(dao).execute(trackingSessionId);
-    }
-
-    private static class StopTrackingSessionTask extends AsyncTask<Long, Void, Void> {
-
-        private Dao mAsyncTaskDao;
-
-        StopTrackingSessionTask(Dao dao) {
-            mAsyncTaskDao = dao;
-        }
-
-        @Override
-        protected Void doInBackground(final Long... ids) {
-            mAsyncTaskDao.stopTrackingSession(ids[0], Calendar.getInstance().getTimeInMillis());
-            Log.v(TAG, "stopping tracking session id: " + ids[0]);
-            return null;
-        }
+    static void stopTracking(Repository repo, long trackingSessionId) {
+        new AsyncTask<Long, Void, Void>() {
+            @Override
+            protected Void doInBackground(Long... ids) {
+                repo.dao.stopTrackingSession(ids[0], Calendar.getInstance().getTimeInMillis());
+                Log.v(TAG, "stopping tracking session id: " + ids[0]);
+                return null;
+            }
+        }.execute(trackingSessionId);
     }
 
     LiveData<List<TrackingSession>> getAllTrackingSession(Profile profile) {

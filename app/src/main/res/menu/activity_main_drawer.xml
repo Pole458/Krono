@@ -14,16 +14,8 @@
                 android:title="@string/profiles"/>
         <item
                 android:id="@+id/nav_sports"
-                android:icon="@mipmap/ic_action_assessment"
+                android:icon="@mipmap/ic_temple"
                 android:title="@string/sports"/>
-        <item
-                android:id="@+id/nav_analytics"
-                android:icon="@mipmap/ic_action_assessment"
-                android:title="@string/analytics"/>
-        <item
-                android:id="@+id/nav_settings"
-                android:icon="@drawable/ic_menu_manage"
-                android:title="@string/settings"/>
     </group>
 
     <!--<item android:title="Communicate">-->

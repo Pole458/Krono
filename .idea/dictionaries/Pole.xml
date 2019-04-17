@@ -2,8 +2,10 @@
   <dictionary name="Pole">
     <words>
       <w>chrono</w>
+      <w>dataset</w>
       <w>fullname</w>
       <w>krono</w>
+      <w>paddings</w>
     </words>
   </dictionary>
 </component>

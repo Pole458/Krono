@@ -1,4 +1,4 @@
-package com.pole.krono.View;
+package com.pole.krono.view;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -114,15 +114,12 @@ public class ProfilesFragment extends Fragment {
 
                 itemView.setOnClickListener(v -> {
 
-                    Intent intent = new Intent();
-
                     if(profile != null) {
 
+                        Intent intent = new Intent(activity, ProfileActivity.class);
                         intent.putExtra("profile_name", profile.getName());
                         intent.putExtra("profile_surname", profile.getSurname());
                         intent.putExtra("profile_sport", profile.getSport());
-
-                        intent.setClass(activity, ProfileActivity.class);
                         startActivity(intent);
 
                     }

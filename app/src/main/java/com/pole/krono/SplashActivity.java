@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import com.pole.krono.View.AddProfileActivity;
-import com.pole.krono.View.MainActivity;
 import com.pole.krono.model.SelectedProfileViewModel;
+import com.pole.krono.view.AddProfileActivity;
+import com.pole.krono.view.MainActivity;
 
 public class SplashActivity extends AppCompatActivity {
 

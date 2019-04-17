@@ -21,12 +21,6 @@ public class Sport {
                 new Sport("Cycling"),
                 new Sport("Swim"),
         };
-        //                            db.execSQL("insert into sport values('Run')");
-//                            db.execSQL("insert into sport values('Cycling')");
-//                            db.execSQL("insert into sport values('Swim - Freestyle')");
-//                            db.execSQL("insert into sport values('Swim - Butterfly')");
-//                            db.execSQL("insert into sport values('Swim - Breaststroke')");
-//                            db.execSQL("insert into sport values('Swim - Backstroke')");
     }
 
     @NonNull

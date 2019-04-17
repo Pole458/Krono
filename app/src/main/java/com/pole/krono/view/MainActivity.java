@@ -1,4 +1,4 @@
-package com.pole.krono.View;
+package com.pole.krono.view;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 import com.pole.krono.R;
@@ -35,10 +36,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private static int ADD_PROFILE_REQUEST = 1;
 
+    private static final String TAG = "Pole: MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+        Intent intent = getIntent();
+
+        if(intent.hasExtra("profile_name")) {
+            Profile profile = new Profile(intent.getStringExtra("profile_name"),
+                    intent.getStringExtra("profile_surname"),
+                    intent.getStringExtra("profile_sport"));
+            Log.v(TAG, "Profile received: " + profile.getFullName());
+            viewModel.insertProfile(getApplicationContext(), profile);
+        } else
+            Log.v(TAG, "No intent received");
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -54,19 +70,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         profileFullName = navigationView.getHeaderView(0).findViewById(R.id.profileName);
         profileSport = navigationView.getHeaderView(0).findViewById(R.id.profileSport);
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-
         changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
 
-        if(getIntent().hasExtra("profile_name")) {
-            viewModel.insertProfile(getApplicationContext(), new Profile(getIntent().getStringExtra("profile_name"),
-                    getIntent().getStringExtra("profile_surname"),
-                    getIntent().getStringExtra("profile_sport")));
-        }
-
-        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
         viewModel.getSelectedProfile().observe(this, profile -> {
-            // Update the UI, in this case, a TextView.
             if (profile != null) {
                 profileFullName.setText(profile.getFullName());
                 profileSport.setText(profile.getSport());
@@ -91,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
@@ -103,10 +108,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             changeFragment(new ProfilesFragment(), 0, R.string.profiles);
         } else if(id == R.id.nav_sports) {
             changeFragment(new SportsFragment(), 0, R.string.sports);
-        } else if (id == R.id.nav_analytics) {
-
-        } else if (id == R.id.nav_settings) {
-
         }
 
         drawer.closeDrawer(GravityCompat.START);
@@ -148,8 +149,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void setSelectedProfile(Profile profile) {
         viewModel.setSelectedProfile(getApplicationContext(), profile);
-        changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
         drawer.closeDrawer(GravityCompat.START);
+//        changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
     }
 
     private void startAddProfileActivity() {

@@ -85,10 +85,13 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         start();
     }
 
+    public void reset() {
+        setText("00:00:00");
+    }
+
     public void stop() {
         mStarted = false;
         updateRunning();
-        setText("00:00:00");
     }
 
     public void pause() {

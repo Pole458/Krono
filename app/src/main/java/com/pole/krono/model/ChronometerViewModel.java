@@ -46,16 +46,17 @@ public class ChronometerViewModel extends AndroidViewModel {
     }
 
     public void insertLap(long lapTime, int lapCounter) {
-        repo.insertLap(lapTime, lapCounter, trackingSessionId);
+        if(trackingSessionId.getValue() != null)
+            Repository.insertLap(repo, lapTime, lapCounter, trackingSessionId.getValue());
     }
 
     public void insertTrackingSession(TrackingSession session) {
-        repo.insertTrackingSession(session, trackingSessionId);
+        Repository.insertTrackingSession(repo, session, trackingSessionId);
     }
 
     public void stopTracking() {
         if(trackingSessionId.getValue() != null)
-            repo.stopTracking(trackingSessionId.getValue());
+            Repository.stopTracking(repo, trackingSessionId.getValue());
     }
 
     public LiveData<List<Lap>> getLaps() {

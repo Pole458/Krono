@@ -10,7 +10,7 @@ public class SelectedProfileViewModel extends AndroidViewModel {
 
     @SuppressWarnings("FieldCanBeLocal")
     private static String TAG = "POLE: SelectedProfileVM";
-
+    @SuppressWarnings("FieldCanBeLocal")
     private Repository repo;
 
     private LiveData<Profile> selectedProfile;
@@ -18,11 +18,11 @@ public class SelectedProfileViewModel extends AndroidViewModel {
     public SelectedProfileViewModel(@NonNull Application application) {
         super(application);
 
+        Log.d(TAG, "onCreate");
+
         repo = Repository.getRepository(application);
 
-        selectedProfile = repo.getSelectedProfile(application);
-
-        Log.d(TAG, "onCreate");
+        selectedProfile = Repository.getSelectedProfile(application, repo);
 
     }
 

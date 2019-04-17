@@ -1,8 +1,7 @@
-package com.pole.krono.View;
+package com.pole.krono.view;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,10 +18,13 @@ import com.pole.krono.MillisecondChronometer;
 import com.pole.krono.R;
 import com.pole.krono.model.*;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
-import java.util.List;
 
 public class ChronometerFragment extends Fragment {
+
+    private final static String TAG = "Pole: ChronoFrag";
 
     private MainViewModel mainViewModel;
     private ChronometerViewModel chronoViewModel;
@@ -39,8 +41,15 @@ public class ChronometerFragment extends Fragment {
     private Spinner sportSpinner;
     private Spinner activityTypeSpinner;
     private View activityTpeTextView;
+    private View centralLayout;
+    private EditText distanceEditText;
+
+    private LapAdapter lapAdapter;
 
     private RecyclerView lapsRecyclerView;
+    private View divider;
+
+    private Button distanceButton;
 
     private ArrayAdapter<Sport> sportArrayAdapter;
     private ArrayAdapter<ActivityType> activityTypeArrayAdapter;
@@ -65,21 +74,20 @@ public class ChronometerFragment extends Fragment {
 
         startButton = view.findViewById(R.id.startTrackingButton);
         startButton.setOnClickListener(v -> {
+            String text = startButton.getText().toString();
 
-            if (startButton.getText().equals("Start Tracking")) {
-
+            if (text.equals(getString(R.string.start_tracking)))
                 startTracking();
-
-            } else {
-
+            else if(text.equals(getString(R.string.stop_tracking)))
                 stopTracking();
-
-            }
+            else if(text.equals(getString(R.string.restart_tracking)))
+                restartTracking();
         });
 
         fullnameTextView = view.findViewById(R.id.fullnameTextView);
         sportActivityTextView = view.findViewById(R.id.sportActivityTextView);
 
+        lapButton = view.findViewById(R.id.lapTrackingButton);
         pauseResumeButton = view.findViewById(R.id.pauseResumeTrackingButton);
 
         pauseResumeButton.setOnClickListener(v -> {
@@ -97,26 +105,54 @@ public class ChronometerFragment extends Fragment {
             }
         });
 
-        lapButton = view.findViewById(R.id.lapTrackingButton);
-
         lapButton.setOnClickListener(v -> chronoViewModel.insertLap(milliChronometer.lap(), milliChronometer.getLaps()));
 
-        sportSpinner = view.findViewById(R.id.sportSpinner);
+        centralLayout = view.findViewById(R.id.centralLayout);
+
+        sportSpinner = centralLayout.findViewById(R.id.sportSpinner);
+        activityTypeSpinner = centralLayout.findViewById(R.id.activityTypeSpinner);
+        activityTpeTextView = centralLayout.findViewById(R.id.activityTypeTextView);
+        distanceEditText = centralLayout.findViewById(R.id.distanceEditText);
+        distanceButton = centralLayout.findViewById(R.id.distanceButton);
+
+        distanceButton.setOnClickListener(v -> {
+            if (distanceButton.getText().equals(getString(R.string.kilometers))) {
+                distanceButton.setText(R.string.meters);
+                if(!distanceEditText.getText().toString().equals("")) {
+                    float distance = Float.valueOf(distanceEditText.getText().toString());
+                    DecimalFormat df = new DecimalFormat("#.###");
+                    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+                    decimalFormatSymbols.setDecimalSeparator('.');
+                    df.setDecimalFormatSymbols(decimalFormatSymbols);
+                    distanceEditText.setText(df.format(distance * 1000));
+                }
+            } else {
+                distanceButton.setText(R.string.kilometers);
+                if(!distanceEditText.getText().toString().equals("")) {
+                    float distance = Float.valueOf(distanceEditText.getText().toString());
+                    DecimalFormat df = new DecimalFormat("#.###");
+                    DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+                    decimalFormatSymbols.setDecimalSeparator('.');
+                    df.setDecimalFormatSymbols(decimalFormatSymbols);
+                    distanceEditText.setText(df.format(distance / 1000));
+                }
+            }
+        });
+
         sportArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
         sportSpinner.setAdapter(sportArrayAdapter);
 
-        activityTypeSpinner = view.findViewById(R.id.activityTypeSpinner);
-        activityTpeTextView = view.findViewById(R.id.activityTypeTextView);
         activityTypeArrayAdapter = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item);
         activityTypeSpinner.setAdapter(activityTypeArrayAdapter);
 
         mainViewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
-        chronoViewModel = ViewModelProviders.of(activity).get(ChronometerViewModel.class);
+        chronoViewModel = ViewModelProviders.of(this).get(ChronometerViewModel.class);
 
         mainViewModel.getSelectedProfile().observe(activity, selectedProfile -> {
             if(selectedProfile != null) {
                 fullnameTextView.setText(selectedProfile.getFullName());
                 chronoViewModel.getSelectedSport().setValue(new Sport(selectedProfile.getSport()));
+//                selectSpinnerItemByValue(sportSpinner, selectedProfile.getSport());
             }
         });
 
@@ -124,7 +160,7 @@ public class ChronometerFragment extends Fragment {
             if(sports != null) {
                 sportArrayAdapter.addAll(sports);
                 sportArrayAdapter.notifyDataSetChanged();
-                Log.v("Pole", "Sport spinner updated");
+                Log.v(TAG, "Sport spinner updated");
                 if(chronoViewModel.getSelectedSport().getValue() != null)
                     selectSpinnerItemByValue(sportSpinner, chronoViewModel.getSelectedSport().getValue().name);
             }
@@ -148,22 +184,15 @@ public class ChronometerFragment extends Fragment {
             }
         });
 
-        chronoViewModel.getSelectedSport().observe(activity, sport -> {
-            if(sport != null) {
-                Log.v("Pole", "Selected sport: " + sport.name);
-                selectSpinnerItemByValue(sportSpinner, sport.name);
-            }
-        });
-
         chronoViewModel.getActivityTypes().observe(activity, activityTypes -> {
             activityTypeArrayAdapter.clear();
             if (activityTypes != null && activityTypes.size() > 0) {
                 activityTypeArrayAdapter.addAll(activityTypes);
-                Log.v("Pole", "Found " + activityTypes.size() + " activity types");
+                Log.v(TAG, "Found " + activityTypes.size() + " activity types");
                 activityTypeSpinner.setVisibility(View.VISIBLE);
                 activityTpeTextView.setVisibility(View.VISIBLE);
             } else {
-                Log.v("Pole", "Found 0 activity types");
+                Log.v(TAG, "Found 0 activity types");
                 activityTypeSpinner.setVisibility(View.INVISIBLE);
                 activityTpeTextView.setVisibility(View.INVISIBLE);
             }
@@ -171,19 +200,20 @@ public class ChronometerFragment extends Fragment {
         });
 
         lapsRecyclerView = view.findViewById(R.id.lapsRecyclerView);
+        divider = view.findViewById(R.id.divider);
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(activity);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mLayoutManager.scrollToPosition(0);
         lapsRecyclerView.setLayoutManager(mLayoutManager);
         lapsRecyclerView.setHasFixedSize(true);
-        final LapAdapter adapter = new LapAdapter(activity);
-        lapsRecyclerView.setAdapter(adapter);
+        lapAdapter = new LapAdapter(activity);
+        lapsRecyclerView.setAdapter(lapAdapter);
         lapsRecyclerView.setLayoutManager(new LinearLayoutManager(activity));
         mainViewModel = ViewModelProviders.of(activity).get(MainViewModel.class);
         chronoViewModel.getLaps().observe(this, laps -> {
             if (laps != null) {
-                adapter.setLaps(laps);
+                lapAdapter.setLaps(laps);
                 lapsRecyclerView.scrollToPosition(0);
             }
         });
@@ -206,6 +236,8 @@ public class ChronometerFragment extends Fragment {
         startButton.setText(R.string.stop_tracking);
         milliChronometer.restart();
 
+        pauseResumeButton.setText(R.string.pause);  //in case it was set to resume
+
         Profile profile = mainViewModel.getSelectedProfile().getValue();
         Sport sport = chronoViewModel.getSelectedSport().getValue();
         ActivityType activityType = null;
@@ -218,32 +250,38 @@ public class ChronometerFragment extends Fragment {
             session.profileName = profile.getName();
             session.profileSurname = profile.getSurname();
             session.sport = sport.name;
+
+            String summary = "";
+            summary += sport.name;
             if(activityType != null) {
+                summary += ", " + activityType.name;
                 session.activityType = activityType.name;
-                sportActivityTextView.setText(String.format("%s, %s",sport.name, activityType.name));
-            } else
-                sportActivityTextView.setText(sport.name);
+            }
+            if(!distanceEditText.getText().toString().equals(""))
+                summary += ", " + distanceEditText.getText() + " " + distanceButton.getText();
+            sportActivityTextView.setText(summary);
 
             session.startTime = Calendar.getInstance().getTimeInMillis();
+
+            String distance = distanceEditText.getText().toString();
+            if(!distance.equals("")) {
+                if(distanceButton.getText().equals("Km")) {
+                    session.distance = Float.parseFloat(distance) * 1000;
+                } else {
+                    session.distance = Float.parseFloat(distance);
+                }
+            }
 
             chronoViewModel.insertTrackingSession(session);
         }
 
-        pauseResumeButton.setVisibility(View.VISIBLE);
-        lapButton.setVisibility(View.VISIBLE);
-
-        sportSpinner.setVisibility(View.INVISIBLE);
-        activityTypeSpinner.setVisibility(View.INVISIBLE);
-        View view = getView();
-        if(view != null) {
-            getView().findViewById(R.id.sportTextView).setVisibility(View.INVISIBLE);
-            getView().findViewById(R.id.activityTypeTextView).setVisibility(View.INVISIBLE);
-            view.findViewById(R.id.line).setVisibility(View.VISIBLE);
-        }
+        centralLayout.setVisibility(View.GONE);
 
         sportActivityTextView.setVisibility(View.VISIBLE);
-
+        divider.setVisibility(View.VISIBLE);
         lapsRecyclerView.setVisibility(View.VISIBLE);
+        pauseResumeButton.setVisibility(View.VISIBLE);
+        lapButton.setVisibility(View.VISIBLE);
 
         listener.onStartTracking();
 
@@ -251,8 +289,7 @@ public class ChronometerFragment extends Fragment {
 
     private void stopTracking() {
 
-        startButton.setText(R.string.start_tracking);
-        pauseResumeButton.setText(R.string.pause);
+        startButton.setText(R.string.restart_tracking);
         milliChronometer.stop();
 
         chronoViewModel.insertLap(milliChronometer.lap(), milliChronometer.getLaps());
@@ -261,96 +298,27 @@ public class ChronometerFragment extends Fragment {
         pauseResumeButton.setVisibility(View.GONE);
         lapButton.setVisibility(View.GONE);
 
-        sportSpinner.setVisibility(View.VISIBLE);
-        activityTypeSpinner.setVisibility(View.VISIBLE);
-        View view = getView();
-        if(view != null) {
-            getView().findViewById(R.id.sportTextView).setVisibility(View.VISIBLE);
-            getView().findViewById(R.id.activityTypeTextView).setVisibility(View.VISIBLE);
-            getView().findViewById(R.id.line).setVisibility(View.GONE);
-        }
+        listener.onStopTracking();
+    }
+
+    private void restartTracking() {
+
+        milliChronometer.reset();
+
+        startButton.setText(R.string.start_tracking);
+
+        centralLayout.setVisibility(View.VISIBLE);
 
         sportActivityTextView.setVisibility(View.GONE);
-
+        divider.setVisibility(View.GONE);
         lapsRecyclerView.setVisibility(View.GONE);
 
-        listener.onStopTracking();
+        lapAdapter.clear();
+
     }
 
     void setListener(Listener listener) {
         this.listener = listener;
-    }
-
-    private class LapAdapter extends RecyclerView.Adapter<LapAdapter.ViewHolder> {
-
-        private LayoutInflater layoutInflater;
-        private List<Lap> laps;
-
-        LapAdapter(Context context) {
-            layoutInflater = LayoutInflater.from(context);
-        }
-
-        @NonNull
-        @Override
-        public LapAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            // create a new view
-            // set the view's size, margins, paddings and layout parameters
-            return new ViewHolder(layoutInflater.inflate(R.layout.recycler_item_lap, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull LapAdapter.ViewHolder holder, int position) {
-            // - get element from your dataset at this position
-            // - replace the contents of the view with that element
-            holder.setLap(position);
-        }
-
-        void setLaps(List<Lap> laps){
-            this.laps = laps;
-            Log.v("Pole", "ChronoFragment: added " + laps.size() + " laps");
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public int getItemCount() {
-            if (laps != null)
-                return laps.size();
-            else return 0;
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-
-            private TextView lapTimeTextView;
-            private TextView gapTextView;
-            private TextView lapNumberTextView;
-
-            ViewHolder(View itemView) {
-                super(itemView);
-
-                lapTimeTextView = itemView.findViewById(R.id.lapTimeTextView);
-                gapTextView = itemView.findViewById(R.id.gapTextView);
-                lapNumberTextView = itemView.findViewById(R.id.lapNumberTextView);
-
-            }
-
-            void setLap(int pos) {
-                Lap lap = laps.get(pos);
-                if(lap != null) {
-                    lapTimeTextView.setText(MillisecondChronometer.getTimeString(lap.time));
-                    lapNumberTextView.setText(String.valueOf(lap.lapNumber));
-                    if(pos < laps.size() - 1) {
-                        long gap = lap.time - laps.get(pos + 1).time;
-                        gapTextView.setText(MillisecondChronometer.getGapString(gap));
-                        gapTextView.setTextColor(gap > 0 ? Color.RED : Color.GREEN);
-                    } else
-                        gapTextView.setText("");
-                } else {
-                    lapTimeTextView.setText(R.string.loading);
-                    gapTextView.setText(R.string.loading);
-                    lapNumberTextView.setText(R.string.loading);
-                }
-            }
-        }
     }
 
     public interface Listener {

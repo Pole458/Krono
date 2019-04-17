@@ -1,4 +1,4 @@
-package com.pole.krono.View;
+package com.pole.krono.view;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;

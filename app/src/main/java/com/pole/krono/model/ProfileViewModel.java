@@ -53,4 +53,8 @@ public class ProfileViewModel extends AndroidViewModel {
     public LiveData<List<TrackingSession>> getTodayTrackingSession() {
         return todayTrackingSession;
     }
+
+    public boolean deleteProfile() {
+        return Repository.deleteProfile(repo, profile);
+    }
 }

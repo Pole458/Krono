@@ -5,18 +5,24 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+import static android.arch.persistence.room.ForeignKey.SET_NULL;
+
 @Entity(foreignKeys = {
         @ForeignKey(
+                onDelete = CASCADE,
                 entity = Profile.class,
                 parentColumns = {"name", "surname"},
                 childColumns = {"profileName", "profileSurname"}
         ),
         @ForeignKey(
+                onDelete = CASCADE,
                 entity = Sport.class,
                 parentColumns = "name",
                 childColumns = "sport"
         ),
         @ForeignKey(
+                onDelete = SET_NULL,
                 entity = ActivityType.class,
                 parentColumns = "name",
                 childColumns = "activityType"
@@ -42,5 +48,10 @@ public class TrackingSession {
     public long endTime;
 
     public float distance;
+
+    public String[] toCSV() {
+        return new String[]{String.valueOf(id), profileName, profileSurname, sport, activityType,
+                String.valueOf(startTime), String.valueOf(endTime), String.valueOf(distance)};
+    }
 
 }

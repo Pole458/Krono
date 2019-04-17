@@ -1,4 +1,4 @@
-package com.pole.krono.View;
+package com.pole.krono.view;
 
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -26,9 +25,6 @@ public class AddProfileActivity extends AppCompatActivity {
 
         Log.d("AddProfileActivity", "onCreate");
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         sportSpinner = findViewById(R.id.sportSpinner);
 
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
@@ -42,19 +38,25 @@ public class AddProfileActivity extends AppCompatActivity {
 
         findViewById(R.id.add_profile_button).setOnClickListener(v -> {
 
-            Intent intent = new Intent();
+            String name = ((EditText)findViewById(R.id.nameEditText)).getText().toString();
+            String surname = ((EditText)findViewById(R.id.surnameEditText)).getText().toString();
+            String sport = ((Sport)(sportSpinner).getSelectedItem()).name;
 
-            intent.putExtra("profile_name", ((EditText)findViewById(R.id.nameEditText)).getText().toString());
-            intent.putExtra("profile_surname", ((EditText)findViewById(R.id.surnameEditText)).getText().toString());
-            intent.putExtra("profile_sport", ((Sport)((Spinner)findViewById(R.id.sportSpinner)).getSelectedItem()).name);
+            if(!name.equals("") && !surname.equals("") && !sport.equals("")) {
+                Intent intent = new Intent();
 
-            if(getIntent().hasExtra("first_profile")) {
-                intent.setClass(this, MainActivity.class);
-                startActivity(intent);
-            } else {
-                setResult(Activity.RESULT_OK, intent);
+                intent.putExtra("profile_name", name);
+                intent.putExtra("profile_surname", surname);
+                intent.putExtra("profile_sport", sport);
+
+                if(getIntent().hasExtra("first_profile")) {
+                    intent.setClass(this, MainActivity.class);
+                    startActivity(intent);
+                } else {
+                    setResult(Activity.RESULT_OK, intent);
+                }
+                finish();
             }
-            finish();
         });
     }
 }

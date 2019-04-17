@@ -5,9 +5,12 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.support.annotation.NonNull;
 
+import static android.arch.persistence.room.ForeignKey.SET_NULL;
+
 @Entity(primaryKeys = {"name","surname"},
         foreignKeys = {
                 @ForeignKey(
+                        onDelete = SET_NULL,
                         entity = Sport.class,
                         parentColumns = "name",
                         childColumns = "sport"
@@ -22,7 +25,6 @@ public class Profile {
     private String surname;
 
     private String sport;
-
 
     public Profile(@NonNull String name, @NonNull String surname, String sport) {
         this.name = name;
@@ -46,5 +48,9 @@ public class Profile {
     @NonNull
     public String getSurname() {
         return surname;
+    }
+
+    public String[] toCSV() {
+        return new String[]{name, surname, sport};
     }
 }

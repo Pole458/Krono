@@ -1,7 +1,9 @@
 package com.pole.krono.model;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
 import java.util.List;
@@ -21,7 +23,7 @@ public interface Dao {
     @Query("SELECT * FROM profile WHERE name == :name AND surname == :surname")
     Profile getProfile(String name, String surname);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertProfiles(Profile... profiles);
 
     @Insert
@@ -47,4 +49,16 @@ public interface Dao {
 
     @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname AND startTime >= :startTime AND endTime < :endTime ORDER BY startTime ASC")
     LiveData<List<TrackingSession>> getTrackingSession(String name, String surname, long startTime, long endTime);
+
+    @Query("SELECT * FROM trackingsession WHERE id == :id")
+    LiveData<TrackingSession> getTrackingSession(Long id);
+
+    @Delete
+    void deleteProfiles(Profile... profiles);
+
+    @Delete
+    void deleteActivityTypes(ActivityType... activityTypes);
+
+    @Delete
+    void deleteSport(Sport sport);
 }

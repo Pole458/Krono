@@ -6,8 +6,11 @@ import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(foreignKeys = {
         @ForeignKey(
+                onDelete = CASCADE,
                 entity = Sport.class,
                 parentColumns = "name",
                 childColumns = "sport"
@@ -26,7 +29,7 @@ public class ActivityType {
         this.sport = sport;
     }
 
-    public static ActivityType[] populate() {
+    static ActivityType[] populate() {
         return new ActivityType[] {
                 new ActivityType("Freestyle", "Swim"),
                 new ActivityType("Butterfly", "Swim"),
@@ -35,6 +38,7 @@ public class ActivityType {
         };
     }
 
+    @NonNull
     @Override
     public String toString() {
         return name;

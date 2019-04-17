@@ -20,7 +20,8 @@
                 android:background="@color/colorPrimary"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"/>
+                app:layout_constraintRight_toRightOf="parent"
+        />
 
         <FrameLayout
                 android:layout_width="0dp"

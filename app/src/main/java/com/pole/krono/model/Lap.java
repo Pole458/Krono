@@ -4,9 +4,12 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
 @Entity(primaryKeys = {"trackingSessionId", "lapNumber"},
         foreignKeys = {
                 @ForeignKey(
+                        onDelete = CASCADE,
                         entity = TrackingSession.class,
                         parentColumns = "id",
                         childColumns = "trackingSessionId"
@@ -25,5 +28,9 @@ public class Lap {
         this.trackingSessionId = trackingSessionId;
         this.lapNumber = lapNumber;
         this.time = time;
+    }
+
+    public String[] toCSV() {
+        return new String[]{String.valueOf(trackingSessionId), String.valueOf(lapNumber), String.valueOf(time)};
     }
 }

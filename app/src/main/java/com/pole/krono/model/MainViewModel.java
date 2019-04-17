@@ -23,14 +23,15 @@ public class MainViewModel extends AndroidViewModel {
     public MainViewModel(Application application) {
         super(application);
 
+        Log.v(TAG, "onCreate");
+
         repo = Repository.getRepository(application);
 
-        selectedProfile = repo.getSelectedProfile(application);
+        selectedProfile = Repository.getSelectedProfile(application, repo);
 
         profiles = repo.getProfiles();
         sports = repo.getSports();
 
-        Log.v(TAG, "onCreate");
     }
 
     public void setSelectedProfile(Context context, Profile profile) {
@@ -50,8 +51,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void insertProfile(Context context, Profile profile) {
-        repo.insertProfile(profile);
+        Repository.insertProfile(context, repo, profile);
         setSelectedProfile(context, profile);
     }
 
+    public void insertSport(String sportName) {
+        Repository.insertSport(repo, new Sport(sportName));
+    }
 }
