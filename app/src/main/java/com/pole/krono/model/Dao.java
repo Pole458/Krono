@@ -47,7 +47,7 @@ public interface Dao {
     @Query("SELECT * FROM lap WHERE trackingSessionId == :sessionId ORDER BY lapNumber DESC")
     LiveData<List<Lap>>getLaps(Long sessionId);
 
-    @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname AND startTime >= :startTime AND endTime < :endTime ORDER BY startTime ASC")
+    @Query("SELECT * FROM trackingsession WHERE profileName == :name AND profileSurname == :surname AND :startTime <= startTime AND startTime < :endTime ORDER BY startTime ASC")
     LiveData<List<TrackingSession>> getTrackingSession(String name, String surname, long startTime, long endTime);
 
     @Query("SELECT * FROM trackingsession WHERE id == :id")

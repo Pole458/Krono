@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
-import com.pole.krono.MillisecondChronometer;
+import com.pole.krono.MyChronometer;
 
 import java.util.Calendar;
 import java.util.List;
@@ -193,7 +193,7 @@ class Repository {
             @Override
             protected Void doInBackground(Lap... laps) {
                 repo.dao.insertLaps(laps);
-                Log.v(TAG, "added lap: " + MillisecondChronometer.getTimeString(laps[0].time) + " to track session " + laps[0].trackingSessionId);
+                Log.v(TAG, "added lap: " + MyChronometer.getTimeString(laps[0].time) + " to track session " + laps[0].trackingSessionId);
                 return null;
             }
         }.execute(new Lap(trackingSessionId, lapCounter, lapTime));

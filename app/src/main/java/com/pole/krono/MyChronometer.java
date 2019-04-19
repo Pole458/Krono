@@ -10,18 +10,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 
-public class MillisecondChronometer extends android.support.v7.widget.AppCompatTextView {
+@SuppressWarnings("unused")
+public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
 
-    @SuppressWarnings("unused")
-    private static final String TAG = "MillisecondChronometer";
+    private static final String TAG = "MyChronometer";
 
     public interface OnChronometerTickListener {
 
-        void onChronometerTick(MillisecondChronometer chronometer);
+        void onChronometerTick(MyChronometer chronometer);
     }
 
     private long mBase;
@@ -36,15 +36,15 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
     private long lastLap;
     private int laps;
 
-    public MillisecondChronometer(Context context) {
+    public MyChronometer(Context context) {
         this (context, null, 0);
     }
 
-    public MillisecondChronometer(Context context, AttributeSet attrs) {
+    public MyChronometer(Context context, AttributeSet attrs) {
         this (context, attrs, 0);
     }
 
-    public MillisecondChronometer(Context context, AttributeSet attrs, int defStyle) {
+    public MyChronometer(Context context, AttributeSet attrs, int defStyle) {
         super (context, attrs, defStyle);
 
         init();
@@ -55,7 +55,7 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         updateText(mBase);
     }
 
-    public void setBase(long base) {
+    private void setBase(long base) {
         mBase = base;
         dispatchChronometerTick();
         updateText(SystemClock.elapsedRealtime());
@@ -86,7 +86,7 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
     }
 
     public void reset() {
-        setText("00:00:00");
+        setText(R.string.zero_time);
     }
 
     public void stop() {
@@ -151,15 +151,45 @@ public class MillisecondChronometer extends android.support.v7.widget.AppCompatT
         }
     }
 
-    private Handler mHandler = new Handler() {
-        public void handleMessage(Message m) {
-            if (mRunning) {
-                updateText(SystemClock.elapsedRealtime());
-                dispatchChronometerTick();
+    private Handler mHandler = new MyHandler(this);
+//new Handler() {
+//        public void handleMessage(Message m) {
+//            if (mRunning) {
+//                updateText(SystemClock.elapsedRealtime());
+//                dispatchChronometerTick();
+//                sendMessageDelayed(Message.obtain(this , TICK_WHAT), 10);
+//            }
+//        }
+//    };
+    private static class MyHandler extends Handler {
+
+        WeakReference<MyChronometer> chrono;
+
+        MyHandler(MyChronometer chronometer){
+            chrono = new WeakReference<>(chronometer);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if(chrono != null && chrono.get().mRunning) {
+                chrono.get().updateText(SystemClock.elapsedRealtime());
+                chrono.get().dispatchChronometerTick();
                 sendMessageDelayed(Message.obtain(this , TICK_WHAT), 10);
             }
         }
-    };
+    }
+
+//    private Handler mHandler = new Handler(new Handler.Callback() {
+//        @Override
+//        public boolean handleMessage(Message m) {
+//            if (mRunning) {
+//                updateText(SystemClock.elapsedRealtime());
+//                dispatchChronometerTick();
+//                mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 10);
+//            }
+//            return true;
+//        }
+//    });
 
     private void dispatchChronometerTick() {
         if (mOnChronometerTickListener != null) {

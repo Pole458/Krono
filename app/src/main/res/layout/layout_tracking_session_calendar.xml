@@ -3,25 +3,15 @@
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		xmlns:app="http://schemas.android.com/apk/res-auto">
+		xmlns:app="http://schemas.android.com/apk/res-auto"
+		android:animateLayoutChanges="true">
 
 		<com.skyhope.eventcalenderlibrary.CalenderEvent
-				android:id="@+id/calender_event"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				app:layout_constraintTop_toTopOf="parent"
-				app:selector_color="@color/colorPrimary"
-				app:month_color="@color/colorPrimaryDark"
-		/>
-
-		<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:id="@+id/dayTextView"
-				android:layout_margin="4dp"
-				app:layout_constraintLeft_toLeftOf="parent"
-				app:layout_constraintRight_toRightOf="parent"
-				app:layout_constraintTop_toBottomOf="@+id/calender_event"
+				android:id="@+id/calendar"
+				app:month_color="@color/colorPrimary"
 		/>
 
 		<android.support.v7.widget.RecyclerView
@@ -33,7 +23,7 @@
 				app:layout_constraintLeft_toLeftOf="parent"
 				app:layout_constraintRight_toRightOf="parent"
 				android:layout_marginTop="8dp"
-				app:layout_constraintTop_toBottomOf="@+id/dayTextView"
+				app:layout_constraintTop_toBottomOf="@+id/calendar"
 				android:scrollbars="vertical">
 		</android.support.v7.widget.RecyclerView>
 

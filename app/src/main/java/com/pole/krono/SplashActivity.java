@@ -13,7 +13,13 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
 
         ViewModelProviders.of(this).get(SelectedProfileViewModel.class).getSelectedProfile().observe(this, profile -> {
             Intent intent;

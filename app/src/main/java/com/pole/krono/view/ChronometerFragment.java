@@ -14,7 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import com.pole.krono.MillisecondChronometer;
+import com.pole.krono.MyChronometer;
 import com.pole.krono.R;
 import com.pole.krono.model.*;
 
@@ -29,7 +29,7 @@ public class ChronometerFragment extends Fragment {
     private MainViewModel mainViewModel;
     private ChronometerViewModel chronoViewModel;
 
-    private MillisecondChronometer milliChronometer;
+    private MyChronometer milliChronometer;
 
     private TextView fullnameTextView;
     private TextView sportActivityTextView;

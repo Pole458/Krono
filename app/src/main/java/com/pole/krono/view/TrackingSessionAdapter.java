@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,7 +80,6 @@ public class TrackingSessionAdapter extends RecyclerView.Adapter<TrackingSession
                 id = trackingSession.id;
                 sportTextView.setText(trackingSession.sport);
                 activityTypeTextView.setText(trackingSession.activityType);
-                Log.v("Pole: TSAdapter", "Adding item with: " + trackingSession.sport + ", " + trackingSession.activityType);
                 startDateTextView.setText(DateFormat.getDateInstance().format(trackingSession.startTime));
             } else {
                 sportTextView.setText(R.string.loading);

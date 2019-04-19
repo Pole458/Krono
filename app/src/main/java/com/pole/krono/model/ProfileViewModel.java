@@ -30,12 +30,13 @@ public class ProfileViewModel extends AndroidViewModel {
 
         repo = Repository.getRepository(application);
 
+        todayTrackingSession = Transformations.switchMap(startTime, startTime -> repo.getTrackingSession(profile, startTime));
+
     }
 
     public void setProfile(Profile profile) {
         this.profile = profile;
         trackingSession = repo.getAllTrackingSession(profile);
-        todayTrackingSession = Transformations.switchMap(startTime, startTime -> repo.getTrackingSession(profile, startTime));
     }
 
     public Profile getProfile() {

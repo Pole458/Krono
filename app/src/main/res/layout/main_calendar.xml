@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:animateLayoutChanges="true">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/buttonLayout"
+    >
+
+        <Button
+                android:id="@+id/button_previous"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="invisible"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:background="@mipmap/ic_arrow_left" />
+
+        <Button
+            android:id="@+id/text_view_month_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/button_previous"
+            app:layout_constraintRight_toLeftOf="@+id/button_next"
+            android:text="Month name"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/button_next"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:background="@mipmap/ic_arrow_right" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:id="@+id/weeks_layout"
+            app:layout_constraintTop_toBottomOf="@+id/buttonLayout"
+    >
+
+        <LinearLayout
+                android:id="@+id/linear_layout_week"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="7"
+                app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                    android:id="@+id/text_view_sunday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/sun" />
+
+            <TextView
+                    android:id="@+id/text_view_monday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/mon" />
+
+            <TextView
+                    android:id="@+id/text_view_tuesday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/tue" />
+
+            <TextView
+                    android:id="@+id/text_view_wednesday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/wed" />
+
+            <TextView
+                    android:id="@+id/text_view_thursday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/thu" />
+
+            <TextView
+                    android:id="@+id/text_view_friday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/fri" />
+
+            <TextView
+                    android:id="@+id/text_view_saturday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/sat" />
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/calendar_week_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/linear_layout_week"
+        />
+
+        <LinearLayout
+                android:id="@+id/calendar_week_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_week_1" />
+
+        <LinearLayout
+                android:id="@+id/calendar_week_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_week_2" />
+
+        <LinearLayout
+                android:id="@+id/calendar_week_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_week_3" />
+
+        <LinearLayout
+                android:id="@+id/calendar_week_5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_week_4" />
+
+        <LinearLayout
+                android:id="@+id/calendar_week_6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="7"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_week_5" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import com.pole.krono.MillisecondChronometer;
+import com.pole.krono.MyChronometer;
 import com.pole.krono.R;
 import com.pole.krono.model.Lap;
 
@@ -78,11 +78,11 @@ public class LapAdapter extends RecyclerView.Adapter<LapAdapter.ViewHolder> {
         void setLap(int pos) {
             Lap lap = laps.get(pos);
             if(lap != null) {
-                lapTimeTextView.setText(MillisecondChronometer.getTimeString(lap.time));
+                lapTimeTextView.setText(MyChronometer.getTimeString(lap.time));
                 lapNumberTextView.setText(String.valueOf(lap.lapNumber));
                 if(pos < laps.size() - 1) {
                     long gap = lap.time - laps.get(pos + 1).time;
-                    gapTextView.setText(MillisecondChronometer.getGapString(gap));
+                    gapTextView.setText(MyChronometer.getGapString(gap));
                     gapTextView.setTextColor(gap > 0 ? Color.RED : Color.GREEN);
                 } else
                     gapTextView.setText("");

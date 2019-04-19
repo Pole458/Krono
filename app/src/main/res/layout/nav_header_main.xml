@@ -16,8 +16,7 @@
     <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/nav_header_vertical_spacing"
-            app:srcCompat="@mipmap/ic_action_action_account_circle"
+            app:srcCompat="@mipmap/ic_account_circle"
             android:contentDescription="@string/nav_header_desc"
             android:id="@+id/profileImageView"
     />
