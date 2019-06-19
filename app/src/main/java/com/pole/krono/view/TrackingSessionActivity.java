@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -112,18 +113,36 @@ public class TrackingSessionActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         menu.add(Menu.NONE, 1, Menu.NONE, "Export to CSV");
+        menu.add(Menu.NONE, 2, Menu.NONE, "Delete session");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //noinspection SwitchStatementWithTooFewBranches
         switch (item.getItemId()) {
             case 1:
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                     exportToCSV();
                 else
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+                return true;
+            case 2:
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete session")
+                        .setMessage("Are you sure you want to delete this tracking session?\nYou will lose the data forever")
+
+                        // Specifying a listener allows you to take an action before dismissing the dialog.
+                        // The dialog is automatically dismissed when a dialog button is clicked.
+                        .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                            viewModel.deleteTrackingSession();
+                            finish();
+                        })
+
+                        // A null listener allows the button to dismiss the dialog and take no further action.
+                        .setNegativeButton(android.R.string.no, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+
                 return true;
             default:
                 // If we got here, the user's action was not recognized.

@@ -122,18 +122,27 @@ class Repository {
     }
 
     static boolean deleteProfile(Repository repo, Profile profile) {
+
+        Log.v(TAG, "Deleting profile " + profile.getFullName());
+
+        Log.v(TAG, "Selected profile is null: " + (repo.selectedProfile.getValue() == null));
+
         if(repo.selectedProfile.getValue() != null && profile.getFullName().equals(repo.selectedProfile.getValue().getFullName())) {
+            Log.v(TAG, "Returning false");
             return false;
         }
+
+        Log.v(TAG, "Starting async task");
 
         new AsyncTask<Profile, Void, Void>() {
 
             @Override
             protected Void doInBackground(Profile... profiles) {
+                Log.v(TAG, "async task do in background");
                 repo.dao.deleteProfiles(profiles);
                 return null;
             }
-        }.execute();
+        }.execute(profile);
 
         return true;
     }
@@ -216,5 +225,15 @@ class Repository {
 
     LiveData<List<TrackingSession>> getTrackingSession(Profile profile, long startTime) {
         return dao.getTrackingSession(profile.getName(), profile.getSurname(), startTime, startTime + 24 * 60 * 60 * 1000);
+    }
+
+    static void deleteTrackingSession(Repository repo, TrackingSession session) {
+        new AsyncTask<TrackingSession, Void, Void>() {
+            @Override
+            protected Void doInBackground(TrackingSession... trackingSessions) {
+                repo.dao.deleteTrackingSession(trackingSessions);
+                return null;
+            }
+        }.execute(session);
     }
 }

@@ -61,4 +61,7 @@ public interface Dao {
 
     @Delete
     void deleteSport(Sport sport);
+
+    @Delete
+    void deleteTrackingSession(TrackingSession... trackingSessions);
 }

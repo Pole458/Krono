@@ -41,4 +41,8 @@ public class TrackingSessionViewModel extends AndroidViewModel {
     public MutableLiveData<Long> getId() {
         return id;
     }
+
+    public void deleteTrackingSession() {
+        Repository.deleteTrackingSession(repo, session.getValue());
+    }
 }

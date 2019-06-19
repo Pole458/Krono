@@ -2,7 +2,6 @@ package com.pole.krono.view;
 
 import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,8 +23,6 @@ import com.pole.krono.CSVExporter;
 import com.pole.krono.R;
 import com.pole.krono.model.Profile;
 import com.pole.krono.model.ProfileViewModel;
-
-import java.io.IOException;
 
 public class ProfileActivity extends AppCompatActivity {
 
