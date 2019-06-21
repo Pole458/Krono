@@ -14,7 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.pole.krono.R;
-import com.pole.krono.model.ProfileViewModel;
+import com.pole.krono.view.adapter.TrackingSessionAdapter;
+import com.pole.krono.viewmodel.ProfileViewModel;
 
 public class TrackingSessionsFragment extends Fragment {
 

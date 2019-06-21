@@ -15,10 +15,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import com.pole.krono.R;
-import com.pole.krono.model.MainViewModel;
+import com.pole.krono.viewmodel.MainViewModel;
 import com.pole.krono.model.Profile;
 
 import java.util.List;

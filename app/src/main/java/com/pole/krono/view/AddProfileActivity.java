@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import com.pole.krono.R;
-import com.pole.krono.model.MainViewModel;
+import com.pole.krono.viewmodel.MainViewModel;
 import com.pole.krono.model.Sport;
 
 public class AddProfileActivity extends AppCompatActivity {

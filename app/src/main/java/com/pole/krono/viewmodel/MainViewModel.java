@@ -1,10 +1,13 @@
-package com.pole.krono.model;
+package com.pole.krono.viewmodel;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.util.Log;
+import com.pole.krono.model.Profile;
+import com.pole.krono.model.Repository;
+import com.pole.krono.model.Sport;
 
 import java.util.List;
 

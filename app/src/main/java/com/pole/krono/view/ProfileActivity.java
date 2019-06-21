@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.pole.krono.CSVExporter;
 import com.pole.krono.R;
 import com.pole.krono.model.Profile;
-import com.pole.krono.model.ProfileViewModel;
+import com.pole.krono.viewmodel.ProfileViewModel;
 
 public class ProfileActivity extends AppCompatActivity {
 

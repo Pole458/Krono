@@ -14,21 +14,12 @@ import android.util.AttributeSet;
 import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 
-@SuppressWarnings("unused")
 public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
-
-    private static final String TAG = "MyChronometer";
-
-    public interface OnChronometerTickListener {
-
-        void onChronometerTick(MyChronometer chronometer);
-    }
 
     private long mBase;
     private boolean mVisible;
     private boolean mStarted;
     private boolean mRunning;
-    private OnChronometerTickListener mOnChronometerTickListener;
 
     private static final int TICK_WHAT = 2;
 
@@ -57,20 +48,7 @@ public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
 
     private void setBase(long base) {
         mBase = base;
-        dispatchChronometerTick();
         updateText(SystemClock.elapsedRealtime());
-    }
-
-    public long getBase() {
-        return mBase;
-    }
-
-    public void setOnChronometerTickListener(OnChronometerTickListener listener) {
-        mOnChronometerTickListener = listener;
-    }
-
-    public OnChronometerTickListener getOnChronometerTickListener() {
-        return mOnChronometerTickListener;
     }
 
     private void start() {
@@ -111,11 +89,6 @@ public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
         return lapTime;
     }
 
-    public void setStarted(boolean started) {
-        mStarted = started;
-        updateRunning();
-    }
-
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
@@ -142,7 +115,6 @@ public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
         if (running != mRunning) {
             if (running) {
                 updateText(SystemClock.elapsedRealtime());
-                dispatchChronometerTick();
                 mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 10);
             } else {
                 mHandler.removeMessages(TICK_WHAT);
@@ -152,15 +124,7 @@ public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
     }
 
     private Handler mHandler = new MyHandler(this);
-//new Handler() {
-//        public void handleMessage(Message m) {
-//            if (mRunning) {
-//                updateText(SystemClock.elapsedRealtime());
-//                dispatchChronometerTick();
-//                sendMessageDelayed(Message.obtain(this , TICK_WHAT), 10);
-//            }
-//        }
-//    };
+
     private static class MyHandler extends Handler {
 
         WeakReference<MyChronometer> chrono;
@@ -173,56 +137,15 @@ public class MyChronometer extends android.support.v7.widget.AppCompatTextView {
         public void handleMessage(Message msg) {
             if(chrono != null && chrono.get().mRunning) {
                 chrono.get().updateText(SystemClock.elapsedRealtime());
-                chrono.get().dispatchChronometerTick();
                 sendMessageDelayed(Message.obtain(this , TICK_WHAT), 10);
             }
         }
     }
 
-//    private Handler mHandler = new Handler(new Handler.Callback() {
-//        @Override
-//        public boolean handleMessage(Message m) {
-//            if (mRunning) {
-//                updateText(SystemClock.elapsedRealtime());
-//                dispatchChronometerTick();
-//                mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 10);
-//            }
-//            return true;
-//        }
-//    });
-
-    private void dispatchChronometerTick() {
-        if (mOnChronometerTickListener != null) {
-            mOnChronometerTickListener.onChronometerTick(this);
-        }
-    }
-
-    public long getTimeElapsed() {
-        return timeElapsed;
-    }
 
     public int getLaps() {
         return laps;
     }
-
-
-    /*
-     Chronometer mChronometer = (Chronometer) findViewById(R.id.chronometer);
-        mChronometer.start();
-
-        //IF you want to stop your chrono after X seconds or minutes.
-        mChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-			public void onChronometerTick(Chronometer chronometer) {
-				if (chronometer.getText().toString().equalsIgnoreCase("00:05:0")) { //When reaches 5 seconds.
-				    //Define here what happens when the Chronometer reaches the time above.
-				    chronometer.stop();
-				    Toast.makeText(getBaseContext(),"Reached the end.",
-						Toast.LENGTH_LONG).show();
-				}
-			}
-		});
-
-     */
 
     private static DecimalFormat df = new DecimalFormat("00");
 

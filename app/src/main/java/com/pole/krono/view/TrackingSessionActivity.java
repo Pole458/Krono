@@ -21,7 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.pole.krono.CSVExporter;
 import com.pole.krono.R;
-import com.pole.krono.model.TrackingSessionViewModel;
+import com.pole.krono.view.adapter.LapAdapter;
+import com.pole.krono.viewmodel.TrackingSessionViewModel;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -32,7 +33,6 @@ import java.util.Locale;
 public class TrackingSessionActivity extends AppCompatActivity {
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static final String TAG = "Pole: TSActivity";
 
     private Toolbar toolbar;
 

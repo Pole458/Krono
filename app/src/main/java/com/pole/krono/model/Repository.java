@@ -13,7 +13,7 @@ import com.pole.krono.MyChronometer;
 import java.util.Calendar;
 import java.util.List;
 
-class Repository {
+public class Repository {
 
     @SuppressWarnings("FieldCanBeLocal")
     private static String TAG = "POLE: Repository";
@@ -28,7 +28,7 @@ class Repository {
         dao = DB.getDatabase(context).dao();
     }
 
-    static Repository getRepository(final Context context) {
+    public static Repository getRepository(final Context context) {
         if (INSTANCE == null) {
             synchronized (Repository.class) {
                 if (INSTANCE == null) {
@@ -39,7 +39,7 @@ class Repository {
         return INSTANCE;
     }
 
-    static void deleteSport(Repository repo, Sport sport) {
+    public static void deleteSport(Repository repo, Sport sport) {
         new AsyncTask<Sport, Void, Void>(){
 
             @Override
@@ -50,7 +50,7 @@ class Repository {
         }.execute(sport);
     }
 
-    static void insertActivityType(Repository repo, ActivityType activityType) {
+    public static void insertActivityType(Repository repo, ActivityType activityType) {
         new AsyncTask<ActivityType, Void, Void>() {
 
             @Override
@@ -61,7 +61,7 @@ class Repository {
         }.execute(activityType);
     }
 
-    static void insertSport(Repository repo, Sport sport) {
+    public static void insertSport(Repository repo, Sport sport) {
         new AsyncTask<Sport, Void, Void>() {
 
             @Override
@@ -73,7 +73,7 @@ class Repository {
 
     }
 
-    static LiveData<Profile> getSelectedProfile(Context context, Repository repo) {
+    public static LiveData<Profile> getSelectedProfile(Context context, Repository repo) {
         if(repo.selectedProfile == null) {
             repo.selectedProfile = new MutableLiveData<>();
             SharedPreferences settings = context.getSharedPreferences("krono_pref", 0);
@@ -100,7 +100,7 @@ class Repository {
         return repo.selectedProfile;
     }
 
-    void setSelectedProfile(Context context, Profile profile) {
+    public void setSelectedProfile(Context context, Profile profile) {
 
         SharedPreferences settings = context.getSharedPreferences("krono_pref", 0);
         settings.edit().putString("profile_name", profile.getName()).putString("profile_surname", profile.getSurname()).apply();
@@ -109,36 +109,28 @@ class Repository {
         selectedProfile.setValue(profile);
     }
 
-    LiveData<List<Profile>> getProfiles() {
+    public LiveData<List<Profile>> getProfiles() {
         return dao.getProfiles();
     }
 
-    LiveData<List<ActivityType>> getActivityTypes(Sport selectedSport) {
+    public LiveData<List<ActivityType>> getActivityTypes(Sport selectedSport) {
         return dao.getActivityTypes(selectedSport.name);
     }
 
-    LiveData<TrackingSession> getTrackingSession(Long id) {
+    public LiveData<TrackingSession> getTrackingSession(Long id) {
         return dao.getTrackingSession(id);
     }
 
-    static boolean deleteProfile(Repository repo, Profile profile) {
-
-        Log.v(TAG, "Deleting profile " + profile.getFullName());
-
-        Log.v(TAG, "Selected profile is null: " + (repo.selectedProfile.getValue() == null));
+    public static boolean deleteProfile(Repository repo, Profile profile) {
 
         if(repo.selectedProfile.getValue() != null && profile.getFullName().equals(repo.selectedProfile.getValue().getFullName())) {
-            Log.v(TAG, "Returning false");
             return false;
         }
-
-        Log.v(TAG, "Starting async task");
 
         new AsyncTask<Profile, Void, Void>() {
 
             @Override
             protected Void doInBackground(Profile... profiles) {
-                Log.v(TAG, "async task do in background");
                 repo.dao.deleteProfiles(profiles);
                 return null;
             }
@@ -147,7 +139,7 @@ class Repository {
         return true;
     }
 
-    static void deleteActivityType(Repository repo, ActivityType activityType) {
+    public static void deleteActivityType(Repository repo, ActivityType activityType) {
 
         new AsyncTask<ActivityType, Void, Void>() {
             @Override
@@ -158,7 +150,7 @@ class Repository {
         }.execute(activityType);
     }
 
-    static void insertProfile(Context context, Repository repo, Profile profile) {
+    public static void insertProfile(Context context, Repository repo, Profile profile) {
         new AsyncTask<Profile, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Profile... profiles) {
@@ -177,11 +169,11 @@ class Repository {
         }.execute(profile);
     }
 
-    LiveData<List<Sport>> getSports() {
+    public LiveData<List<Sport>> getSports() {
         return dao.getSports();
     }
 
-    static void insertTrackingSession(Repository repo, TrackingSession session, MutableLiveData<Long> trackingSessionId) {
+    public static void insertTrackingSession(Repository repo, TrackingSession session, MutableLiveData<Long> trackingSessionId) {
         new AsyncTask<TrackingSession, Void, Void>() {
             @Override
             protected Void doInBackground(TrackingSession... trackingSessions) {
@@ -193,11 +185,11 @@ class Repository {
         }.execute(session);
     }
 
-    LiveData<List<Lap>> getLaps(Long trackingSessionId) {
+    public LiveData<List<Lap>> getLaps(Long trackingSessionId) {
         return dao.getLaps(trackingSessionId);
     }
 
-    static void insertLap(Repository repo, long lapTime, int lapCounter, Long trackingSessionId) {
+    public static void insertLap(Repository repo, long lapTime, int lapCounter, Long trackingSessionId) {
         new AsyncTask<Lap, Void, Void>() {
             @Override
             protected Void doInBackground(Lap... laps) {
@@ -208,7 +200,7 @@ class Repository {
         }.execute(new Lap(trackingSessionId, lapCounter, lapTime));
     }
 
-    static void stopTracking(Repository repo, long trackingSessionId) {
+    public static void stopTracking(Repository repo, long trackingSessionId) {
         new AsyncTask<Long, Void, Void>() {
             @Override
             protected Void doInBackground(Long... ids) {
@@ -219,15 +211,15 @@ class Repository {
         }.execute(trackingSessionId);
     }
 
-    LiveData<List<TrackingSession>> getAllTrackingSession(Profile profile) {
+    public LiveData<List<TrackingSession>> getAllTrackingSession(Profile profile) {
         return dao.getTrackingSession(profile.getName(), profile.getSurname());
     }
 
-    LiveData<List<TrackingSession>> getTrackingSession(Profile profile, long startTime) {
+    public LiveData<List<TrackingSession>> getTrackingSession(Profile profile, long startTime) {
         return dao.getTrackingSession(profile.getName(), profile.getSurname(), startTime, startTime + 24 * 60 * 60 * 1000);
     }
 
-    static void deleteTrackingSession(Repository repo, TrackingSession session) {
+    public static void deleteTrackingSession(Repository repo, TrackingSession session) {
         new AsyncTask<TrackingSession, Void, Void>() {
             @Override
             protected Void doInBackground(TrackingSession... trackingSessions) {

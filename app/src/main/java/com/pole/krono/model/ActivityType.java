@@ -24,7 +24,7 @@ public class ActivityType {
 
     public String sport;
 
-    ActivityType(@NonNull String name, String sport){
+    public ActivityType(@NonNull String name, String sport){
         this.name = name;
         this.sport = sport;
     }

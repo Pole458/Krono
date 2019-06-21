@@ -17,6 +17,9 @@ import android.widget.*;
 import com.pole.krono.MyChronometer;
 import com.pole.krono.R;
 import com.pole.krono.model.*;
+import com.pole.krono.view.adapter.LapAdapter;
+import com.pole.krono.viewmodel.ChronometerViewModel;
+import com.pole.krono.viewmodel.MainViewModel;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
