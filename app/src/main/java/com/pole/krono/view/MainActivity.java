@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
+
     }
 
     @Override
@@ -150,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void setSelectedProfile(Profile profile) {
         viewModel.setSelectedProfile(getApplicationContext(), profile);
         drawer.closeDrawer(GravityCompat.START);
-//        changeFragment(new ChronometerFragment(), R.id.nav_chronometer, R.string.app_name);
     }
 
     private void startAddProfileActivity() {
